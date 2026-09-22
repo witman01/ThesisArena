@@ -1,0 +1,548 @@
+@import "tailwindcss";
+
+/*
+ * ThesisArena — Nansen-flavoured dark emerald.
+ *
+ * Near-black surfaces carrying a slight green cast, a single bright emerald
+ * accent, and amber/red reserved for stance and risk. Dark only: the product
+ * is a trading terminal and the palette is part of its identity.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces — each step lifts slightly and warms toward green */
+  --plane: #05090800;
+  --bg: #050908;
+  --surface-1: #0a100e;
+  --surface-2: #0e1614;
+  --surface-3: #13201c;
+  --surface-hover: #16241f;
+
+  /* Ink */
+  --text-primary: #ffffff;
+  --text-secondary: #a7b5b0;
+  --text-muted: #6b7b76;
+
+  /* Emerald accent */
+  --accent: #00e08a;
+  --accent-bright: #2bffa8;
+  --accent-dim: #00a866;
+  --accent-wash: rgba(0, 224, 138, 0.1);
+  --accent-wash-strong: rgba(0, 224, 138, 0.18);
+
+  /* Borders */
+  --border: rgba(0, 224, 138, 0.1);
+  --border-strong: rgba(0, 224, 138, 0.22);
+  --border-neutral: rgba(255, 255, 255, 0.07);
+
+  /* Stance — always paired with a glyph and a label, never colour alone.
+     `cautious` is the logo's own teal (#40c0c0, sampled from the mark) rather
+     than a generic amber, so the warning tier belongs to the palette instead
+     of fighting it. */
+  --bullish: #00e08a;
+  --cautious: #3fcbc4;
+  --bearish: #ff5f5f;
+  --neutral: #7d8d88;
+
+  /* Signed flow */
+  --pos: #00e08a;
+  --neg: #ff5f5f;
+
+  --font-sans: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, Consolas,
+    monospace;
+}
+
+@theme inline {
+  /* 360px and up. The header needs one step below sm to keep the logo,
+     the primary action and the menu in a 320px bar. */
+  --breakpoint-xs: 22.5rem;
+  --color-bg: var(--bg);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--text-primary);
+  --color-ink-secondary: var(--text-secondary);
+  --color-ink-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-bullish: var(--bullish);
+  --color-cautious: var(--cautious);
+  --color-bearish: var(--bearish);
+  --color-edge: var(--border);
+  --color-edge-strong: var(--border-strong);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--border-neutral);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Card — the single repeated container in this UI */
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.card-2 {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* Emerald glow used sparingly on the hero and active nav */
+.glow {
+  box-shadow:
+    0 0 0 1px var(--border-strong),
+    0 0 40px -12px rgba(0, 224, 138, 0.35);
+}
+
+.grid-texture {
+  background-image:
+    linear-gradient(rgba(0, 224, 138, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 224, 138, 0.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ---------------------------------------------------------------- motion */
+
+/* Reveal-on-scroll. Elements start shifted and are released by an
+   IntersectionObserver adding [data-shown]. Without JS they stay visible. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal[data-shown='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes ta-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0) scale(1.04);
+  }
+}
+.float-slow {
+  animation: ta-float 14s ease-in-out infinite;
+}
+.float-slower {
+  animation: ta-float 19s ease-in-out infinite reverse;
+}
+
+@keyframes ta-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-slow {
+  animation: ta-spin 48s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes ta-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: ta-marquee 42s linear infinite;
+}
+.marquee-host:hover .marquee {
+  animation-play-state: paused;
+}
+
+/* Orbiting coin icons. Each item sets --a0 (phase), --r (radius), --dur.
+   The inner counter-rotation keeps the icon upright as it travels. */
+@keyframes ta-orbit {
+  from {
+    transform: rotate(var(--a0)) translateX(var(--r)) rotate(calc(-1 * var(--a0)));
+  }
+  to {
+    transform: rotate(calc(var(--a0) + 360deg)) translateX(var(--r))
+      rotate(calc(-1 * (var(--a0) + 360deg)));
+  }
+}
+.orbit {
+  animation: ta-orbit var(--dur, 30s) linear infinite;
+}
+.orbit-rev {
+  animation-direction: reverse;
+}
+
+/* Rotating headline — snappy pop in / pop out.
+   Transform + opacity only; blur is too expensive to read cleanly at 1s/line. */
+@keyframes ta-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ta-line-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.985);
+  }
+}
+.line-in {
+  animation: ta-line-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.line-out {
+  animation: ta-line-out 260ms cubic-bezier(0.5, 0, 0.9, 0.4) both;
+}
+
+@keyframes ta-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes ta-shimmer {
+  to {
+    background-position: 200% 0;
+  }
+}
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.16) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: ta-shimmer 2.6s linear infinite;
+}
+
+@keyframes ta-sheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-60%) skewX(-18deg);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(160%) skewX(-18deg);
+  }
+}
+
+@keyframes ta-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.live-dot {
+  animation: ta-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes ta-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.bar-grow {
+  transform-origin: left;
+  animation: ta-grow 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot,
+  .bar-grow,
+  .float-slow,
+  .float-slower,
+  .spin-slow,
+  .marquee,
+  .shimmer,
+  .orbit,
+  .line-in,
+  .line-out {
+    animation: none;
+  }
+  .line-out {
+    opacity: 1;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+::selection {
+  background: var(--accent-dim);
+  color: #04120c;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 6px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-hover);
+}
+
+/* ------------------------------------------------------- small screens */
+
+/*
+ * Micro-labels and tap targets on phones.
+ *
+ * The 9 and 9.5px mono labels are a deliberate part of the desktop identity
+ * and read fine on a monitor. Held at arm's length on a phone they do not, so
+ * they are raised to 11px below 480px rather than redesigned. Tailwind writes
+ * the arbitrary size into the class name, which is what these selectors match,
+ * so no call site has to change and the desktop rendering is untouched.
+ */
+@media (max-width: 480px) {
+  [class*="text-[8px]"],
+  [class*="text-[8.5px]"],
+  [class*="text-[9px]"],
+  [class*="text-[9.5px]"] {
+    font-size: 11px !important;
+  }
+
+  /* SVG labels inside charts are sized by attribute rather than class. */
+  svg text {
+    font-size: 11px;
+  }
+  [class*="text-[10px]"],
+  [class*="text-[10.5px]"] {
+    font-size: 11.5px !important;
+  }
+
+  /* Letter-spacing that looks composed on a wide label wastes the width a
+     phone does not have. */
+  [class*="tracking-[0.18em]"],
+  [class*="tracking-[0.2em]"],
+  [class*="tracking-[0.22em]"] {
+    letter-spacing: 0.12em !important;
+  }
+}
+
+/*
+ * A comfortable target for anything tapped.
+ *
+ * Applied by pointer type rather than width: a small laptop with a mouse does
+ * not need it, and a large tablet with a finger does. Padding is used instead
+ * of a min-height so nothing is stretched out of its row.
+ */
+@media (pointer: coarse) {
+  .tap-target {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ------------------------------------------------------------------- cta */
+
+/*
+ * The primary call to action.
+ *
+ * A slow emerald gradient drifts across the face and a soft halo sits behind
+ * it, so the button reads as lit rather than decorated. Both hold still under
+ * prefers-reduced-motion, and the gradient keeps the label on a dark ink that
+ * clears AA at every point in the sweep.
+ */
+
+.cta {
+  border-radius: 14px;
+  isolation: isolate;
+}
+
+.cta-face {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.8rem 1.35rem;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #04120c;
+  background: linear-gradient(
+    100deg,
+    #00b874 0%,
+    #00e08a 26%,
+    #5cffc0 50%,
+    #00e08a 74%,
+    #00b874 100%
+  );
+  background-size: 260% 100%;
+  animation: cta-sweep 7s linear infinite;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cta-halo {
+  position: absolute;
+  inset: -3px;
+  z-index: 0;
+  border-radius: 17px;
+  background: linear-gradient(100deg, #00b874, #5cffc0, #00b874);
+  background-size: 260% 100%;
+  animation: cta-sweep 7s linear infinite;
+  filter: blur(11px);
+  opacity: 0.34;
+  transition: opacity 260ms ease;
+}
+
+.cta:hover .cta-face {
+  transform: translateY(-1px);
+}
+.cta:hover .cta-halo {
+  opacity: 0.6;
+}
+.cta:active .cta-face {
+  transform: translateY(0);
+}
+
+.cta:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 3px;
+}
+
+/* The arrow leans forward on hover — the only motion tied to intent. */
+.cta-arrow {
+  display: inline-block;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cta:hover .cta-arrow {
+  transform: translateX(3px);
+}
+
+@keyframes cta-sweep {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 260% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-face,
+  .cta-halo {
+    animation: none;
+    background-position: 26% 50%;
+  }
+  .cta-face,
+  .cta-arrow {
+    transition: none;
+  }
+}
+
+/* ----------------------------------------------------------------- print */
+
+/*
+ * The report is the one page meant to leave the screen. Printing flattens it
+ * to ink on white so it survives as a PDF, and drops the chrome that only
+ * makes sense in a browser.
+ */
+@media print {
+  :root {
+    --bg: #ffffff;
+    --surface-1: #ffffff;
+    --surface-2: #ffffff;
+    --surface-3: #eeeeee;
+    --text-primary: #000000;
+    --text-secondary: #333333;
+    --text-muted: #666666;
+    --accent: #00734d;
+    --accent-dim: #00734d;
+    --border: rgba(0, 0, 0, 0.18);
+    --border-neutral: rgba(0, 0, 0, 0.18);
+    --border-strong: rgba(0, 0, 0, 0.3);
+    --bullish: #00734d;
+    --cautious: #8a6d1f;
+    --bearish: #b3261e;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  /* Page furniture and anything interactive has no meaning on paper. The
+     whitepaper's table of contents is not furniture, so it opts back in. */
+  header.sticky,
+  footer,
+  nav:not(.print-keep),
+  button,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .card,
+  section {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+}

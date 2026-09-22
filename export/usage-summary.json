@@ -1,0 +1,63 @@
+{
+  "generatedAt": "2026-09-21T16:25:30.858Z",
+  "liveApiCalls": 5011,
+  "successful": 5002,
+  "failed": 9,
+  "creditsConsumed": 4884,
+  "creditsRemaining": 15082,
+  "excludedFromCount": {
+    "cacheHits": 0,
+    "fixtureReplays": 21
+  },
+  "firstCallAt": "2026-09-19T17:28:16.013Z",
+  "lastCallAt": "2026-09-21T16:24:59.212Z",
+  "byContext": [
+    {
+      "context": "monitoring",
+      "calls": 4268,
+      "credits": 4267
+    },
+    {
+      "context": "investigation",
+      "calls": 625,
+      "credits": 617
+    },
+    {
+      "context": "search",
+      "calls": 118,
+      "credits": 0
+    }
+  ],
+  "byEndpoint": [
+    {
+      "endpoint": "tgm/flow-intelligence",
+      "calls": 2730,
+      "credits": 2730,
+      "failed": 0
+    },
+    {
+      "endpoint": "tgm/token-ohlcv",
+      "calls": 1701,
+      "credits": 1701,
+      "failed": 0
+    },
+    {
+      "endpoint": "tgm/who-bought-sold",
+      "calls": 394,
+      "credits": 393,
+      "failed": 1
+    },
+    {
+      "endpoint": "search/general",
+      "calls": 118,
+      "credits": 0,
+      "failed": 0
+    },
+    {
+      "endpoint": "tgm/flows",
+      "calls": 68,
+      "credits": 60,
+      "failed": 8
+    }
+  ]
+}
