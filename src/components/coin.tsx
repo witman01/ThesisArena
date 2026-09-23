@@ -105,7 +105,20 @@ export function CoinIcon({
           flexShrink: 0,
         }}
       >
-        <Monogram label={label} hue={hue} size={size} />
+        {local ? (
+          <span
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              background: 'var(--surface-3)',
+              border: '1px solid var(--border-neutral)',
+            }}
+            aria-hidden="true"
+          />
+        ) : (
+          <Monogram label={label} hue={hue} size={size} />
+        )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -114,10 +127,17 @@ export function CoinIcon({
           height={size}
           style={{
             position: 'absolute',
-            inset: 0,
-            width: size,
-            height: size,
-            borderRadius: '50%',
+            // The curated marks are bare artwork on a transparent canvas and
+            // run edge to edge, so a circular clip slices their corners off:
+            // Solana's three bars came out truncated and fused together. They
+            // get a padded disc to sit inside instead. Remote logos arrive
+            // with their own badge, so those still fill the circle.
+            inset: local ? Math.round(size * 0.16) : 0,
+            width: local ? size - Math.round(size * 0.32) : size,
+            height: local ? size - Math.round(size * 0.32) : size,
+            // Never distort a mark that is not perfectly square.
+            objectFit: 'contain',
+            borderRadius: local ? 0 : '50%',
             // Hidden rather than unmounted. A parent that re-keys this
             // component resets the failed flag, which put a broken image back
             // over the monogram; opacity does not depend on that state

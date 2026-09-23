@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { NansenClient } from '@/lib/nansen/client';
+import { isResearchable } from '@/lib/nansen/endpoints';
 import { priceLabel, type AssetMeta } from '@/lib/assets';
 import { recordRequests } from '@/lib/db/store';
 
@@ -220,7 +221,10 @@ export async function GET(req: Request) {
         t.address &&
         t.symbol &&
         isSpotContract(t.address, t.symbol) &&
-        !DERIVATIVE_VENUES.has(t.chain.toLowerCase()),
+        !DERIVATIVE_VENUES.has(t.chain.toLowerCase()) &&
+        // Offering a token the research endpoints cannot read guarantees a
+        // failed investigation. BTC on native Bitcoin was the common case.
+        isResearchable(t.chain),
     );
 
     // The largest market cap carrying a given symbol identifies the real

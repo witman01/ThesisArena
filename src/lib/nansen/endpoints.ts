@@ -134,6 +134,30 @@ export const ENDPOINTS = {
 export type EndpointKey = keyof typeof ENDPOINTS;
 
 /**
+ * Chains the token-god-mode endpoints accept.
+ *
+ * Taken verbatim from what the API returns when it rejects one, so the list
+ * cannot drift from the server's own idea of it.
+ *
+ * `search/general` indexes more than this. Bitcoin is the clearest case: BTC
+ * resolves to a native Bitcoin entry that every research endpoint then refuses
+ * with a 422, so an investigation launched on it could only ever fail. A token
+ * that cannot be researched is filtered out of search rather than offered and
+ * then broken.
+ */
+export const RESEARCH_CHAINS = new Set([
+  'arbitrum', 'arc', 'avalanche', 'base', 'bnb', 'ethereum', 'hyperevm',
+  'injective', 'linea', 'mantle', 'mantra', 'monad', 'near', 'optimism',
+  'plasma', 'polygon', 'robinhood', 'sei', 'solana', 'sonic', 'starknet',
+  'sui', 'ton', 'tron',
+]);
+
+/** Whether the four research modules can read this chain at all. */
+export function isResearchable(chain: string): boolean {
+  return RESEARCH_CHAINS.has(chain.toLowerCase().trim());
+}
+
+/**
  * Guard for the render layer. Raw values from anything above `attribution`
  * must not be displayed — they may only feed a composite score.
  */
