@@ -134,7 +134,7 @@ export async function loadInvestigation(invId: string): Promise<LoadedInvestigat
         : row.status === 'UNDER_STRESS'
           ? 'stressed'
           : 'holding',
-    elapsed: '—',
+    elapsed: 'n/a',
     agents,
     consensus: {
       score: row.evidence_score,
@@ -142,8 +142,8 @@ export async function loadInvestigation(invId: string): Promise<LoadedInvestigat
       label: statusLabel(row.status),
       leanPositive: row.support_count,
       total: row.support_count + row.challenge_count,
-      strongestSignal: row.strongest_signal ?? '—',
-      biggestContradiction: row.biggest_contradiction ?? '—',
+      strongestSignal: row.strongest_signal ?? 'n/a',
+      biggestContradiction: row.biggest_contradiction ?? 'n/a',
     },
     tripwires,
     termStructure: (row.term_structure

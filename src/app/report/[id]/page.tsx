@@ -90,7 +90,7 @@ export default async function Report({ params }: PageProps<'/report/[id]'>) {
         </Callout>
       </Section>
 
-      <Section n="03" title="Agent consensus">
+      <Section n="03" title="Module consensus">
         <div className="overflow-hidden rounded-xl border">
           <table className="w-full">
             <thead>
@@ -116,7 +116,7 @@ export default async function Report({ params }: PageProps<'/report/[id]'>) {
                     {a.confidence}%
                   </td>
                   <td className="tabular px-4 py-3 text-right text-[13px] text-ink-muted">
-                    {WEIGHT_LABEL[a.id] ?? '—'}
+                    {WEIGHT_LABEL[a.id] ?? 'n/a'}
                   </td>
                 </tr>
               ))}
@@ -148,7 +148,7 @@ export default async function Report({ params }: PageProps<'/report/[id]'>) {
                   className="tabular text-[14px] font-semibold"
                   style={{ color: toneColor(b.tone) }}
                 >
-                  {b.display || '—'}
+                  {b.display || 'n/a'}
                 </span>
               </li>
             ))}
@@ -182,7 +182,7 @@ export default async function Report({ params }: PageProps<'/report/[id]'>) {
                     className="tabular text-[14px] font-semibold"
                     style={{ color: 'var(--cautious)' }}
                   >
-                    {bullet.display || '—'}
+                    {bullet.display || 'n/a'}
                   </span>
                 </div>
                 <p className="mt-1 font-mono text-[10.5px] text-ink-muted">

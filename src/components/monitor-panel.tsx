@@ -98,11 +98,11 @@ export function MonitorPanel({
             <Cell label="Interval" value={`${job.interval_minutes} min`} />
             <Cell
               label="Last checked"
-              value={job.last_checked_at ? <Time iso={job.last_checked_at} /> : '—'}
+              value={job.last_checked_at ? <Time iso={job.last_checked_at} /> : 'n/a'}
             />
             <Cell
               label="Next check"
-              value={active && job.next_check_at ? <Time iso={job.next_check_at} future /> : '—'}
+              value={active && job.next_check_at ? <Time iso={job.next_check_at} future /> : 'n/a'}
             />
           </dl>
 
@@ -127,8 +127,8 @@ export function MonitorPanel({
       ) : (
         <div className="px-5 py-5">
           <p className="max-w-[60ch] text-[13px] leading-relaxed text-ink-secondary">
-            Monitoring re-reads only the metrics these conditions are bound to —
-            roughly 2 credits per check, 5 on the deeper cycle. Every check is a
+            Monitoring re-reads only the metrics these conditions are bound to, roughly
+            2 credits per check, 5 on the deeper cycle. Every check is a
             real request; cached and replayed responses are never counted.
           </p>
           <div className="mt-4">

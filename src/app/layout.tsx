@@ -8,9 +8,9 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ThesisArena — put your thesis on trial",
+  title: "ThesisArena · put your thesis on trial",
   description:
-    "State a crypto thesis and four specialised agents investigate it against live Nansen data, then commit to exactly what would prove it wrong.",
+    "State a crypto thesis and four deterministic research modules interrogate it against live Nansen data, then commit to exactly what would prove it wrong.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -64,7 +64,7 @@ function SiteFooter() {
               Thesis<span style={{ color: "var(--accent)" }}>Arena</span>
             </span>
             <p className="mt-2 text-[13px] leading-relaxed text-ink-secondary">
-              Put your thesis on trial. Four agents, live on-chain evidence, and
+              Put your thesis on trial. Four research modules, live on-chain evidence, and
               an explicit list of what would prove you wrong.
             </p>
             {/* Attribution is mandatory, but it reads better as a line of

@@ -168,7 +168,7 @@ export async function smartMoney(
     summary:
       direction > 0
         ? accel < -0.5
-          ? 'High-conviction wallets accumulated over the week, but the short end has rolled over — the trend is decelerating.'
+          ? 'High-conviction wallets accumulated over the week, but the short end has rolled over, so the trend is decelerating.'
           : 'High-conviction wallets are steadily adding exposure across every horizon.'
         : 'High-conviction wallets are net sellers over the week.',
     evidence,
@@ -315,7 +315,7 @@ export async function capitalFlow(
       : pressure > 0.02
         ? 'Net token flow is positive across the window. More supply is being absorbed than released.'
         : pressure < -0.02
-          ? 'Net token flow is negative across the window — supply is being released faster than absorbed.'
+          ? 'Net token flow is negative across the window. Supply is being released faster than absorbed.'
           : 'Inflow and outflow are near balance; the flow read is inconclusive.',
     evidence,
     metrics: { netTok, netUsd, pressure, priceChange, buckets: buckets.length },
@@ -395,7 +395,7 @@ export async function holderStructure(
     confidence,
     summary:
       concentration > 0.5
-        ? 'Activity is bunched in very few addresses — single-holder exit risk is elevated.'
+        ? 'Activity is bunched in very few addresses, so single-holder exit risk is elevated.'
         : imbalance > 0.15
           ? 'The active trader set is a net accumulator, and activity is spread rather than bunched.'
           : imbalance < -0.15
@@ -520,7 +520,7 @@ export async function patternMemory(
     confidence,
     summary: analogues.length
       ? `${wins} of ${analogues.length} comparable setups in this asset's own history continued higher over the following week.`
-      : 'No comparable setup found in the available history — precedent is silent here.',
+      : 'No comparable setup found in the available history, so precedent is silent here.',
     evidence: [
       {
         label: 'Analogues found',

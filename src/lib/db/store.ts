@@ -355,6 +355,33 @@ export async function listInvestigations(limit = 50): Promise<InvestigationRow[]
   ]);
 }
 
+/**
+ * Total investigations on record.
+ *
+ * Separate from listInvestigations because the landing page needs the real
+ * total, not the length of the page it renders. Reusing the list length there
+ * reported "6 investigations" no matter how many had actually been run.
+ */
+export async function countInvestigations(): Promise<number> {
+  const row = await one<{ n: number }>(
+    `SELECT ${countCast('COUNT(*)')} AS n FROM investigation`,
+  );
+  return row?.n ?? 0;
+}
+
+/**
+ * Investigations per status, over the whole table.
+ *
+ * History showed these by filtering the rows it had already fetched, so the
+ * figures silently described one page rather than the record.
+ */
+export async function statusCounts(): Promise<Record<string, number>> {
+  const rows = await all<{ status: string; n: number }>(
+    `SELECT status, ${countCast('COUNT(*)')} AS n FROM investigation GROUP BY status`,
+  );
+  return Object.fromEntries(rows.map((r) => [r.status, r.n]));
+}
+
 export async function getInvestigation(invId: string): Promise<InvestigationRow | null> {
   return one<InvestigationRow>(`${INV_SELECT} WHERE i.id = ?`, [invId]);
 }

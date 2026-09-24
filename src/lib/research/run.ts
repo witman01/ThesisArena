@@ -83,7 +83,7 @@ export async function runInvestigation(
       !/^[a-z0-9._-]+\.(near|ton|eth)$/i.test(asset.address)) {
     throw new Error(
       `"${asset.address}" is not a spot contract address. ` +
-        `${asset.symbol} may be a perpetual market rather than a token — pick the spot listing instead.`,
+        `${asset.symbol} may be a perpetual market rather than a token. Pick the spot listing instead.`,
     );
   }
 
@@ -137,7 +137,7 @@ export async function runInvestigation(
     statement,
     highlight: `$${asset.symbol}`,
     asset: { symbol: asset.symbol, chain: asset.chain },
-    horizon: '7–30 days',
+    horizon: '7 to 30 days',
     state: trippedFatal ? 'broken' : anyStressed ? 'stressed' : 'holding',
     elapsed: '00:00',
     agents: agentViews,

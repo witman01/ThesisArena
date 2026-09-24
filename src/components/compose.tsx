@@ -335,7 +335,7 @@ export function Compose({
                       </span>
                       <span className="text-right">
                         <span className="tabular block font-mono text-[12px]">
-                          {a.priceUsd > 0 ? priceLabel(a.priceUsd) : '—'}
+                          {a.priceUsd > 0 ? priceLabel(a.priceUsd) : 'n/a'}
                         </span>
                         <span className="tabular block font-mono text-[10px] text-ink-muted">
                           {a.marketCapUsd > 0 ? compactUsd(a.marketCapUsd) : ''}
@@ -407,7 +407,7 @@ function AssetCard({
                   ? compactUsd(a.canonicalMarketCap)
                   : a.marketCapUsd > 0
                     ? compactUsd(a.marketCapUsd)
-                    : '—'
+                    : 'n/a'
               }
             />
             {a.change24h !== 0 && (
@@ -425,7 +425,7 @@ function AssetCard({
               style={{ color: 'var(--cautious)' }}
               title="Nansen's price for this contract differs from the canonical asset"
             >
-              ⚠ Price differs from reference — {a.priceWarning}
+              ⚠ Price differs from reference: {a.priceWarning}
             </p>
           )}
 
@@ -442,7 +442,7 @@ function AssetCard({
               </p>
               {a.alsoOn && a.alsoOn.length > 0 && (
                 <p className="mt-1 font-mono text-[10px] text-ink-muted">
-                  also on {a.alsoOn.map((o) => o.chainLabel).join(', ')} — press
+                  also on {a.alsoOn.map((o) => o.chainLabel).join(', ')}. Press
                   Change to analyse one of those instead
                 </p>
               )}

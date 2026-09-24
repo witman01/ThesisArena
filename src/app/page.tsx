@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { listInvestigations, getUsage } from '@/lib/db/store';
+import { listInvestigations, countInvestigations, getUsage } from '@/lib/db/store';
 import { SENTIMENT } from '@/lib/research/observe';
 import { Hero } from '@/components/hero';
 import { HowItWorks, Section } from '@/components/sections';
@@ -24,8 +24,12 @@ const TONE: Record<string, string> = {
  * says so.
  */
 export default async function Home() {
-  const recent = await listInvestigations(6);
-  const usage = await getUsage();
+  // Concurrent: three independent reads, and on Postgres each is a round trip.
+  const [recent, total, usage] = await Promise.all([
+    listInvestigations(6),
+    countInvestigations(),
+    getUsage(),
+  ]);
 
   return (
     <main>
@@ -38,7 +42,7 @@ export default async function Home() {
           score: r.evidence_score,
           status: r.status,
         }))}
-        investigationCount={recent.length}
+        investigationCount={total}
         liveCalls={usage.liveCalls}
       />
 
@@ -50,7 +54,7 @@ export default async function Home() {
         {recent.length === 0 ? (
           <EmptyState
             title="Nothing on trial yet"
-            body="Put a thesis on trial and it appears here — with its evidence, its stress conditions, and every status change recorded permanently."
+            body="Put a thesis on trial and it appears here, with its evidence, its stress conditions, and every status change recorded permanently."
           />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

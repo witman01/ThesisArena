@@ -54,7 +54,7 @@ export function AgentDrawer({
     <div className="fixed inset-0 z-50">
       <button
         type="button"
-        aria-label="Close agent detail"
+        aria-label="Close module detail"
         onClick={onClose}
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
       />
@@ -160,7 +160,7 @@ export function AgentDrawer({
                               : 'var(--text-primary)',
                       }}
                     >
-                      {b.display || '—'}
+                      {b.display || 'n/a'}
                     </span>
                   </div>
                   <div className="mt-2 flex items-center gap-2 font-mono text-[10px] text-ink-muted">
@@ -180,7 +180,7 @@ export function AgentDrawer({
               Every figure above is bound to the request that produced it.
               Findings marked <span style={{ color: 'var(--cautious)' }}>derived</span>{' '}
               come from restricted endpoints and contribute only to a composite
-              score — their raw values are never displayed.
+              score. Their raw values are never displayed.
             </p>
           </section>
         </div>

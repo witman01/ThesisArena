@@ -63,7 +63,7 @@ export default function FullWhitepaper() {
                     >
                       {p.title}
                     </a>
-                    <span className="text-ink-muted"> — {p.summary}</span>
+                    <span className="text-ink-muted"> · {p.summary}</span>
                   </li>
                 ))}
               </ul>
@@ -100,7 +100,7 @@ export default function FullWhitepaper() {
 
       <footer className="mt-16 border-t pt-6 text-[12px] leading-relaxed text-ink-muted">
         <p>
-          Powered by Nansen API. Derived signals only — restricted data never
+          Powered by Nansen API. Derived signals only. Restricted data never
           renders as raw values. Research tool, not investment advice.
         </p>
       </footer>

@@ -307,7 +307,7 @@ const principle: WPPage = {
         the sign flipped. Three things guard against it. Conditions carry a{' '}
         <Code>sustain</Code> window, so a single noisy reading does not trip one.
         Severity is graded, so only a <Code>fatal</Code> condition can move a
-        thesis to Invalidated. And state is reversible — a condition that
+        thesis to Invalidated. And state is reversible: a condition that
         recovers moves back from <Code>tripped</Code> to <Code>stressed</Code>,
         which has been observed in live operation.
       </P>
@@ -346,7 +346,7 @@ const architecture: WPPage = {
       <H2 id="resolve">Resolution</H2>
       <P>
         The ticker is pulled out of the sentence and resolved against
-        Nansen&rsquo;s live index, which costs nothing —{' '}
+        Nansen&rsquo;s live index, which costs nothing:{' '}
         <Code>search/general</Code> is a zero-credit endpoint, so asset search
         can be fully live without a budget consideration.
       </P>
@@ -377,7 +377,7 @@ const architecture: WPPage = {
         No language model runs in the research path. Modules are arithmetic over
         API responses; conditions are typed objects; the checker is a
         comparator. The same inputs produce the same read, which means a verdict
-        can be re-derived and audited after the fact — and means the system
+        can be re-derived and audited after the fact, and means the system
         cannot hallucinate a finding, because nothing in the path is capable of
         inventing one.
       </P>
@@ -524,7 +524,7 @@ const scoring: WPPage = {
           They are not calibrated. Nothing has been backtested to justify
           35/25/20/20 over any other reasonable split. They reflect a view that
           cohort flow is the most informative single signal available at one
-          credit — a view, not a result.
+          credit. That is a view, not a result.
         </p>
       </Callout>
 
@@ -571,13 +571,13 @@ const conditions: WPPage = {
       <P>
         Six conditions are committed per investigation. Each names the endpoint
         and field it reads, a comparator, a threshold, a sustain window and a
-        severity — everything needed to evaluate it later without
+        severity: everything needed to evaluate it later without
         interpretation.
       </P>
       <Table
         head={['Field', 'Purpose']}
         rows={[
-          [<Code key="1">metric</Code>, 'Endpoint, field and params — makes the condition re-readable'],
+          [<Code key="1">metric</Code>, 'Endpoint, field and params: makes the condition re-readable'],
           [<Code key="2">comparator</Code>, 'Less than, greater than, or crosses'],
           [<Code key="3">threshold</Code>, 'The value that constitutes refutation'],
           [<Code key="4">sustain</Code>, 'How long it must hold, so noise does not trip it'],
@@ -648,7 +648,7 @@ const monitoring: WPPage = {
       <Callout kind="note" title="Monitoring never reads from cache">
         <p>
           The monitor sets <Code>cacheTtlMs: 0</Code> and bypasses the fixture
-          layer entirely. A cached answer would defeat the entire purpose — the
+          layer entirely. A cached answer would defeat the entire purpose, because the
           question being asked is specifically &ldquo;has this changed since
           last time?&rdquo;
         </p>
@@ -661,7 +661,7 @@ const monitoring: WPPage = {
       </P>
 
       <H2 id="states">States</H2>
-      <Figure label="Thesis states" caption="The state is derived, not stored — recomputed from the conditions and module stances on every read.">
+      <Figure label="Thesis states" caption="The state is derived, not stored. It is recomputed from the conditions and module stances on every read.">
         <StateMachine />
       </Figure>
 
@@ -669,7 +669,7 @@ const monitoring: WPPage = {
       <P>
         Order matters, and getting it wrong produces a genuinely misleading
         interface. A fatal trip outranks everything. But zero module support
-        outranks a merely stressed condition — if no module supports the claim,
+        outranks a merely stressed condition. If no module supports the claim,
         the thesis is Challenged, not Under pressure.
       </P>
       <Pre>{`if (fatalTripped) return 'INVALIDATED';
@@ -839,7 +839,7 @@ const costStrategy: WPPage = {
         <Table
           head={['Tier', 'Cost', 'When it runs']}
           rows={[
-            ['Low', '0–1 credits', 'Always'],
+            ['Low', '0 to 1 credits', 'Always'],
             ['Mid', '5 credits', 'Only when the cheap tier is inconclusive'],
             ['High', '25 credits', 'Explicit opt-in per call'],
             ['Blocked', 'never spent', 'Throws; never reached'],
@@ -888,7 +888,7 @@ const costStrategy: WPPage = {
             },
             {
               label: 'Credits remaining',
-              value: u.creditsRemaining?.toLocaleString() ?? '—',
+              value: u.creditsRemaining?.toLocaleString() ?? 'n/a',
               note: 'from the response header',
             },
             {
@@ -1018,7 +1018,7 @@ const verification: WPPage = {
           it is enforced in the schema rather than in a function someone could
           forget to call. Call volume comes from investigations users run and
           from monitoring checks re-reading conditions committed to in advance
-          across a portfolio of distinct theses — not from a loop around a cheap
+          across a portfolio of distinct theses, not from a loop around a cheap
           endpoint.
         </P>
 

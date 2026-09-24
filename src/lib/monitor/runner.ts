@@ -395,7 +395,7 @@ export async function runCheck(job: MonitoringJob): Promise<CheckResult> {
     await logEvent(job.id, job.investigation_id, {
       kind: 'error',
       detail: outOfCredits
-        ? 'Monitoring paused — the Nansen key is out of credits. Top up, then press Resume; the conditions and their history are untouched.'
+        ? 'Monitoring paused. The Nansen key is out of credits. Top up, then press Resume; the conditions and their history are untouched.'
         : message,
       liveCalls: client.liveCalls,
       credits: client.creditsSpent,

@@ -171,8 +171,8 @@ describe('formatting', () => {
   });
 
   it('returns a dash rather than a fake zero for missing values', () => {
-    expect(priceLabel(0)).toBe('—');
-    expect(compactUsd(0)).toBe('—');
+    expect(priceLabel(0)).toBe('n/a');
+    expect(compactUsd(0)).toBe('n/a');
   });
 
   it('pulls a ticker out of free text', () => {

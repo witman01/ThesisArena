@@ -84,6 +84,14 @@ They answer four different questions, which is the point. If they were four view
 
 Every investigation ends with **why the verdict came out that way**: which module carried the weight, what argued against it, which conditions moved and by how much, and what the read could not see. Each line carries its figure and the endpoint that produced it.
 
+## The result card
+
+![Shareable result card](docs/screenshots/share-card.png)
+
+Every investigation renders a card at `/api/og/[id]`, generated server side from the stored verdict rather than from anything typed by hand. Share on X downloads the image and opens the composer with the caption already written, so the claim, the score, the coverage and the invalidation count travel together and cannot be quoted selectively.
+
+It carries the two numbers unmerged, the support and challenge split, how many of the six conditions have broken, and a one-line verdict in plain words. In small type at the bottom: **Scores the claim, not the token. Not a price call.** That line is there because a number on a dark card next to a ticker looks like a price signal, and this one is not.
+
 ## Nansen integration
 
 Every request goes through one client, so cost, budget, rate limiting and the ledger cannot be bypassed. There is no second path to the API, deliberately, because a parallel route would break the counting guarantee.
@@ -167,7 +175,7 @@ npm run dev
 
 ### Routes
 
-`/` arena · `/new` investigate · `/thesis/[id]` result and monitoring · `/report/[id]` full report · `/history` · `/analytics` request ledger · `/whitepaper` the design document · `/api/og/[id]` share image
+`/` arena · `/new` investigate · `/thesis/[id]` result and monitoring · `/report/[id]` full report · `/history` the permanent record · `/analytics` request ledger · `/settings` live configuration and compliance classes · `/whitepaper` the design document · `/whitepaper/full` one-page print view · `/api/og/[id]` share image
 
 ## Whitepaper
 
@@ -191,7 +199,8 @@ Audited at 320, 360, 375, 390, 393, 412, 430, 480, 768, 820, 834, 1024 and 1440p
 - **There is no news, social or launch data in this system.** A reason is never "the token launched a product". The only market context available is chain TVL and stablecoin supply, read independently from DeFiLlama.
 - `tgm/flows` rejects native tokens and stablecoins. Those investigations degrade to a cohort-level read and say so, but they are genuinely thinner.
 - Cohort endpoints return top traders by volume, a biased sample of holders by construction. The modules are built to be robust to that, not to correct it.
-- Four token icons are drawn approximations rather than official brand assets.
+- The 13 curated marks in `public/coins` are drawn approximations rather than official brand assets. Every other token logo is the real one, fetched through `/api/icon` and cached.
+- **Research is limited to the chains Nansen's token-god-mode endpoints cover.** A ticker whose best listing sits on an unsupported chain (native Bitcoin, for example) resolves to a researchable contract on a supported chain instead, and the chain it actually read is shown on the result. It is not the same asset, and the page does not pretend otherwise.
 
 ## Verification
 

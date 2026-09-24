@@ -223,12 +223,30 @@ function HeroBackdrop() {
   );
 }
 
-/* Decorative only — the orbiting marks make no claim about live data. */
+/*
+ * Decorative only. The orbiting marks make no claim about live data.
+ *
+ * Every symbol here resolves to a real logo, either a curated local file or a
+ * canonical contract the icon proxy can look up. Adding one that resolves to
+ * neither would put a lettered monogram in the hero, which looks like a
+ * missing asset rather than a design choice.
+ */
 const RINGS = [
-  { r: 205, dur: 44, size: 38, coins: ['BTC', 'ETH', 'SOL', 'USDT', 'BNB'] },
-  { r: 152, dur: 34, size: 33, coins: ['USDC', 'ARB', 'WBTC', 'HYPE'], rev: true },
-  { r: 101, dur: 25, size: 29, coins: ['ZEC', 'LTC', 'ARC'] },
-  { r: 56, dur: 17, size: 25, coins: ['JUP'], rev: true },
+  {
+    r: 232,
+    dur: 52,
+    size: 36,
+    coins: ['BTC', 'ETH', 'SOL', 'USDT', 'BNB', 'LINK', 'GOOGL'],
+  },
+  {
+    r: 180,
+    dur: 42,
+    size: 33,
+    coins: ['USDC', 'ARB', 'WBTC', 'HYPE', 'UNI', 'PEPE'],
+    rev: true,
+  },
+  { r: 130, dur: 32, size: 30, coins: ['ZEC', 'LTC', 'ARC', 'AAVE', 'DOGE'] },
+  { r: 82, dur: 22, size: 26, coins: ['JUP', 'SHIB', 'MKR'], rev: true },
 ];
 
 const ORBIT = RINGS.flatMap((ring) =>

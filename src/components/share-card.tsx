@@ -49,12 +49,12 @@ export function ShareCard({
   const tripped = thesis.tripwires.filter((t) => t.status === 'tripped').length;
 
   const caption =
-    `${verdictLabel(status)} — ${SENTIMENT[status].toLowerCase()}.\n\n` +
+    `${verdictLabel(status)}: ${SENTIMENT[status].toLowerCase()}.\n\n` +
     `"${thesis.statement}"\n\n` +
     `Evidence score ${thesis.consensus.score}/100 · ${thesis.consensus.coverage}% data coverage\n` +
     `${thesis.consensus.leanPositive} support · ${thesis.consensus.total - thesis.consensus.leanPositive} challenge · ` +
     `${tripped}/${thesis.tripwires.length} stress conditions breached\n\n` +
-    `Put your thesis on trial — powered by Nansen.`;
+    `Put your thesis on trial. Powered by Nansen.`;
 
   const tweetHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     caption,
@@ -199,7 +199,7 @@ ${url}`);
             <Metric label="Data coverage" value={`${thesis.consensus.coverage}%`} />
             <Metric
               label="Support / challenge"
-              value={`${thesis.consensus.leanPositive} – ${thesis.consensus.total - thesis.consensus.leanPositive}`}
+              value={`${thesis.consensus.leanPositive} / ${thesis.consensus.total - thesis.consensus.leanPositive}`}
             />
             <Metric
               label="Invalidation progress"
@@ -267,7 +267,7 @@ ${url}`);
           style={{ background: 'var(--accent-wash)', color: 'var(--text-secondary)' }}
         >
           <strong className="text-ink">Image saved and caption copied.</strong> The X
-          composer is open in a new tab with the text already in it — drag the
+          composer is open in a new tab with the text already in it. Drag the
           downloaded image in, or paste it with{' '}
           <kbd className="font-mono">Ctrl/Cmd&nbsp;+&nbsp;V</kbd>.
         </div>

@@ -164,7 +164,7 @@ export default function NewThesis() {
           Put a thesis on trial
         </h1>
         <p className="mt-3 max-w-[52ch] text-[14.5px] leading-relaxed text-ink-secondary">
-          State what you believe. Four agents will interrogate it against live
+          State what you believe. Four research modules interrogate it against live
           on-chain data, then commit to the exact conditions that would prove it
           wrong.
         </p>

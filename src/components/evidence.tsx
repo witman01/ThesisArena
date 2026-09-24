@@ -17,8 +17,8 @@ import { metricValue, sparkPoints } from '@/lib/format';
 const CLASS_NOTE: Record<Provenance['redistribution'], string> = {
   allowed: 'Redistributable',
   attribution: 'Redistributable with attribution to Nansen',
-  restricted: 'Restricted — feeds a composite score only, never shown raw',
-  prohibited: 'Prohibited — internal use only, never rendered',
+  restricted: 'Restricted: feeds a composite score only, never shown raw',
+  prohibited: 'Prohibited: internal use only, never rendered',
 };
 
 export function ProvenanceDot({ provenance: p }: { provenance: Provenance }) {
@@ -174,7 +174,7 @@ function TripwireRow({ tripwire: t }: { tripwire: Tripwire }) {
             aria-valuenow={Math.round(t.proximity * 100)}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label={`${t.claim} — distance to threshold`}
+            aria-label={`${t.claim}: distance to threshold`}
           >
             <div
               className="bar-grow h-full rounded-full"

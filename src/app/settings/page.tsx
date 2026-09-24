@@ -24,7 +24,7 @@ const TIER_LABEL: Record<string, { name: string; rule: string; tone: string }> =
 const REDIST_NOTE: Record<string, string> = {
   allowed: 'Redistributable',
   attribution: 'Redistributable with attribution',
-  restricted: 'Composite score only — never rendered raw',
+  restricted: 'Composite score only, never rendered raw',
   prohibited: 'Never rendered, never called',
 };
 
@@ -83,7 +83,7 @@ export default async function Settings() {
                 />
                 {keyConfigured
                   ? 'Configured. Held server-side in .env.local, never sent to the browser'
-                  : 'Not configured — add NANSEN_API_KEY to .env.local'}
+                  : 'Not configured. Add NANSEN_API_KEY to .env.local'}
               </p>
             </div>
 
@@ -120,7 +120,7 @@ export default async function Settings() {
           />
           <Tile
             label="Check interval"
-            value={active ? (active.lo === active.hi ? `${active.lo} min` : `${active.lo}–${active.hi} min`) : '—'}
+            value={active ? (active.lo === active.hi ? `${active.lo} min` : `${active.lo} to ${active.hi} min`) : 'n/a'}
             note="per monitored thesis"
           />
           <Tile label="Checks run" value={checks.toLocaleString()} note="recorded in the event log" />

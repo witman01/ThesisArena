@@ -81,9 +81,14 @@ export async function migratePg(): Promise<void> {
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
 
+  // Retried like every other query. Migration runs on the cold start, which is
+  // precisely when a connection is most likely to fail to establish, and an
+  // unretried failure here turns a transient network blip into a 500 on the
+  // first page a visitor loads. Every statement is IF NOT EXISTS, so re-running
+  // the file after a partial failure is safe.
   const db = getSql();
   for (const statement of statements) {
-    await db.query(statement);
+    await withRetry(() => db.query(statement));
   }
 
   migrated = true;

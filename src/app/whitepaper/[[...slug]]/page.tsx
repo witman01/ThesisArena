@@ -23,12 +23,12 @@ const MOVED: Record<string, string> = {
 export async function generateMetadata({ params }: PageProps<'/whitepaper/[[...slug]]'>) {
   const { slug } = await params;
   const page = findPage(slugOf(slug));
-  if (!page) return { title: 'Whitepaper — ThesisArena' };
+  if (!page) return { title: 'Whitepaper · ThesisArena' };
 
   return {
-    title: `${page.title} — ThesisArena Whitepaper`,
+    title: `${page.title} · ThesisArena Whitepaper`,
     description: page.summary,
-    openGraph: { title: `${page.title} — ThesisArena`, description: page.summary },
+    openGraph: { title: `${page.title} · ThesisArena`, description: page.summary },
   };
 }
 

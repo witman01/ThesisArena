@@ -13,7 +13,7 @@ const STEPS = [
   },
   {
     n: '02',
-    title: 'Four agents investigate',
+    title: 'Four modules investigate',
     body: 'Smart money, capital flow, holder structure and historical precedent each run an independent evidence sweep, and disagree out loud.',
   },
   {

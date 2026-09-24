@@ -217,7 +217,7 @@ export async function GET(
           <Stat label="DATA COVERAGE" value={`${thesis.consensus.coverage}%`} />
           <Stat
             label="SUPPORT / CHALLENGE"
-            value={`${thesis.consensus.leanPositive} – ${challenges}`}
+            value={`${thesis.consensus.leanPositive} / ${challenges}`}
           />
           <Stat
             label="INVALIDATION PROGRESS"

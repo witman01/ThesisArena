@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { listInvestigations } from '@/lib/db/store';
+import { listInvestigations, countInvestigations, statusCounts } from '@/lib/db/store';
 import { SENTIMENT } from '@/lib/research/observe';
 import { PageHead } from '@/components/shell';
 import { Section } from '@/components/sections';
@@ -16,11 +16,18 @@ const TONE: Record<string, string> = {
   INVALIDATED: 'var(--bearish)',
 };
 
-export default async function History() {
-  const rows = await listInvestigations();
+/** A page of the record, not the record. The stats always describe all of it. */
+const PAGE = 200;
 
-  const invalidated = rows.filter((r) => r.status === 'INVALIDATED').length;
-  const stressed = rows.filter((r) => r.status === 'UNDER_STRESS').length;
+export default async function History() {
+  const [rows, total, byStatus] = await Promise.all([
+    listInvestigations(PAGE),
+    countInvestigations(),
+    statusCounts(),
+  ]);
+
+  const invalidated = byStatus.INVALIDATED ?? 0;
+  const stressed = byStatus.UNDER_STRESS ?? 0;
 
   return (
     <main>
@@ -39,7 +46,7 @@ export default async function History() {
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Stat label="Investigations" value={rows.length} />
+              <Stat label="Investigations" value={total} />
               <Stat label="Under stress" value={stressed} tone="var(--cautious)" />
               <Stat label="Invalidated" value={invalidated} tone="var(--bearish)" />
             </div>
@@ -85,6 +92,13 @@ export default async function History() {
                 </li>
               ))}
             </ul>
+
+            {total > rows.length && (
+              <p className="mt-4 font-mono text-[11px] text-ink-muted">
+                Showing the {rows.length} most recent of {total}. The stats above
+                cover all of them.
+              </p>
+            )}
           </>
         )}
       </Section>

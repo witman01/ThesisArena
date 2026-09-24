@@ -19,10 +19,10 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ params }: PageProps<'/thesis/[id]'>) {
   const { id } = await params;
   const loaded = await loadInvestigation(id);
-  if (!loaded) return { title: 'Investigation — ThesisArena' };
+  if (!loaded) return { title: 'Investigation · ThesisArena' };
 
-  const title = `${SENTIMENT[loaded.status]} — ${loaded.row.symbol} · ${loaded.thesis.consensus.score}/100`;
-  const description = `${loaded.row.statement} — evidence score ${loaded.thesis.consensus.score}/100 on ${loaded.thesis.consensus.coverage}% data coverage. Powered by Nansen.`;
+  const title = `${SENTIMENT[loaded.status]} · ${loaded.row.symbol} · ${loaded.thesis.consensus.score}/100`;
+  const description = `${loaded.row.statement} · evidence score ${loaded.thesis.consensus.score}/100 on ${loaded.thesis.consensus.coverage}% data coverage. Powered by Nansen.`;
   const image = `/api/og/${id}`;
 
   return {

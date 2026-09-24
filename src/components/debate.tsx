@@ -189,7 +189,7 @@ function EvidenceTable({ rows }: { rows: AgentBullet[] }) {
                         : 'var(--text-primary)',
                 }}
               >
-                {r.display || '—'}
+                {r.display || 'n/a'}
               </td>
             </tr>
           ))}

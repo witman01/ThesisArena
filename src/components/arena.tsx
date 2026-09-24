@@ -289,11 +289,11 @@ export function ConsensusCard({ consensus: c }: { consensus: Consensus }) {
             {c.label}
           </p>
           <p className="mt-0.5 text-[12px] text-ink-muted">
-            {c.leanPositive} of {c.total} agents lean positive
+            {c.leanPositive} of {c.total} modules lean positive
           </p>
         </div>
 
-        <ScoreRing score={c.score} tone={tone} />
+        <CoverageRing coverage={c.coverage} />
       </div>
 
       <div
@@ -359,40 +359,59 @@ function Callout({
   );
 }
 
-function ScoreRing({ score, tone }: { score: number; tone: string }) {
+/**
+ * How much data backed the read.
+ *
+ * This ring used to repeat the score, which the number and the bar beside it
+ * already carry twice over, so it said nothing. Coverage is the second half of
+ * every verdict here and had no place on this card: an 80 built on 30% of the
+ * data is a different object from an 80 built on 95%, and the two now sit side
+ * by side.
+ */
+function CoverageRing({ coverage }: { coverage: number }) {
   const R = 30;
   const C = 2 * Math.PI * R;
+  // Thin coverage is a caveat on the verdict, so it is coloured as one.
+  const tone = coverage >= 70 ? 'var(--accent)' : 'var(--cautious)';
 
+  // The label sits below the ring rather than inside it. Inside, "COVERAGE"
+  // set in tracked mono is wider than the ring's inner diameter, so it ran
+  // under the stroke and collided with the percentage above it.
   return (
-    <div className="relative ml-auto h-[76px] w-[76px] shrink-0">
-      <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true">
-        <circle
-          cx="38"
-          cy="38"
-          r={R}
-          fill="none"
-          stroke="var(--surface-3)"
-          strokeWidth="5"
-        />
-        <circle
-          cx="38"
-          cy="38"
-          r={R}
-          fill="none"
-          stroke={tone}
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={C}
-          strokeDashoffset={C * (1 - score / 100)}
-          transform="rotate(-90 38 38)"
-        />
-      </svg>
-      <div className="absolute inset-0 grid place-items-center">
-        <span className="text-[19px] font-bold leading-none">{score}</span>
-        <span className="mt-0.5 font-mono text-[8px] uppercase tracking-wider text-ink-muted">
-          Score
+    <div className="ml-auto flex shrink-0 flex-col items-center gap-1.5">
+      <div className="relative h-[72px] w-[72px]">
+        <svg
+          width="72"
+          height="72"
+          viewBox="0 0 72 72"
+          role="img"
+          aria-label={`Data coverage ${coverage} percent`}
+        >
+          <circle cx="36" cy="36" r={R} fill="none" stroke="var(--surface-3)" strokeWidth="5" />
+          <circle
+            cx="36"
+            cy="36"
+            r={R}
+            fill="none"
+            stroke={tone}
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={C}
+            strokeDashoffset={C * (1 - coverage / 100)}
+            transform="rotate(-90 36 36)"
+          />
+        </svg>
+        <span
+          className="tabular absolute inset-0 grid place-items-center text-[17px] font-bold leading-none"
+          style={{ color: tone }}
+          aria-hidden="true"
+        >
+          {coverage}%
         </span>
       </div>
+      <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-muted">
+        Coverage
+      </span>
     </div>
   );
 }
