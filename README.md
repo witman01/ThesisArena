@@ -100,7 +100,7 @@ Every request goes through one client, so cost, budget, rate limiting and the le
 - **Tiered escalation.** The 1-credit tier always runs. The 5-credit tier runs only when the cheap tier is inconclusive. The 25-credit tier requires explicit opt-in. Endpoints that are prohibited for display or ruinously expensive **throw** rather than being merely avoided.
 - **Record and replay.** A response is recorded once and replayed at zero credits thereafter.
 
-An investigation costs about 9 credits. A monitoring check costs 2, and every sixth cycle costs 5. That is what makes continuous monitoring affordable, and monitoring is the product.
+An investigation costs about 8 credits, measured rather than estimated: 644 credits across 78 investigations in the ledger below. A monitoring check costs 2, and every sixth cycle costs 5. That is what makes continuous monitoring affordable, and monitoring is the product: of 8,666 live calls, 7,851 came from monitoring re-reading committed conditions and 652 from investigations.
 
 ### Compliance
 
@@ -114,7 +114,7 @@ Nansen's terms permit derived analysis but prohibit republishing proprietary sig
 
 ![Request ledger](docs/screenshots/ledger.png)
 
-Call volume comes from real work: investigations users run, plus monitoring checks re-reading conditions committed to in advance across a portfolio of distinct theses.
+Call volume comes from real work: investigations users run, plus monitoring checks re-reading conditions committed to in advance across a portfolio of distinct theses. As of this writing the ledger holds **8,666 live calls**, 8,657 of them successful, against 8,494 credits, spread over 78 investigations and the monitoring that followed them.
 
 **Only real network calls count.** The ledger records three sources, `live`, `cache` and `fixture`, and a database `CHECK` constraint enforces the distinction rather than leaving it to whoever writes the next query. Cache hits and fixture replays are shown on the analytics page and explicitly excluded, with the exclusion stated on the page itself.
 
