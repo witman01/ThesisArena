@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { isServerless } from '@/lib/env';
 
 /**
  * Persistence for ThesisArena.
@@ -14,17 +15,6 @@ import { dirname } from 'node:path';
 const DB_PATH = process.env.THESISARENA_DB ?? 'data/thesisarena.db';
 
 let db: Database.Database | null = null;
-
-/**
- * True on a platform whose filesystem SQLite cannot live on.
- *
- * Vercel and Netlify both set their own marker; `NODE_ENV` alone is not enough,
- * because a production build run on a real server is perfectly able to use
- * SQLite and should keep working.
- */
-function isServerless(): boolean {
-  return Boolean(process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME);
-}
 
 export function getDb(): Database.Database {
   if (db) return db;

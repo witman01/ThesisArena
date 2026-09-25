@@ -196,7 +196,12 @@ export function Hero({
           )}
         </div>
 
-        <div className="hidden lg:block">
+        {/* Shown at every width. It was desktop-only because its marks were
+            fixed pixels and so could not shrink with the ring they sit on;
+            both are container-relative now. On a phone it sits under the
+            headline and the call to action, which keeps the first screen the
+            claim rather than the ornament. */}
+        <div className="mx-auto w-full max-w-[320px] sm:max-w-[400px] lg:max-w-none">
           <ArenaOrb />
         </div>
       </div>
@@ -325,8 +330,11 @@ function ArenaOrb() {
                   '--r': `${((o.r / 440) * 100).toFixed(2)}cqw`,
                   '--a0': `${o.a0}deg`,
                   '--dur': `${o.dur}s`,
-                  width: o.size,
-                  height: o.size,
+                  // Container-relative like the radius, so a mark keeps its
+                  // proportion to the ring it rides at any width. As fixed
+                  // pixels they were correct at 440px and oversized at 320.
+                  width: `${((o.size / 440) * 100).toFixed(2)}cqw`,
+                  height: `${((o.size / 440) * 100).toFixed(2)}cqw`,
                   filter: on
                     ? 'drop-shadow(0 0 10px rgba(0,224,138,0.9))'
                     : 'drop-shadow(0 4px 10px rgba(0,0,0,0.65))',
@@ -335,7 +343,7 @@ function ArenaOrb() {
                 } as React.CSSProperties
               }
             >
-              <CoinIcon symbol={o.symbol} size={o.size} />
+              <CoinIcon symbol={o.symbol} size={o.size} fluid />
             </span>
           );
         })}
@@ -345,9 +353,15 @@ function ArenaOrb() {
         <span
           key={active}
           className="float-slow line-in grid place-items-center"
-          style={{ filter: 'drop-shadow(0 0 26px rgba(0,224,138,0.55))' }}
+          style={{
+            filter: 'drop-shadow(0 0 26px rgba(0,224,138,0.55))',
+            // 84 of 440, held as a proportion so the centre mark scales with
+            // the ring rather than swamping it on a narrow screen.
+            width: '19.09cqw',
+            height: '19.09cqw',
+          }}
         >
-          <CoinIcon symbol={active} size={84} />
+          <CoinIcon symbol={active} size={84} fluid />
         </span>
       </div>
     </div>

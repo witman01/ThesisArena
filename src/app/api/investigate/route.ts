@@ -1,6 +1,7 @@
 import { runInvestigation } from '@/lib/research/run';
 import type { AssetRef } from '@/lib/research/types';
 import { saveInvestigation } from '@/lib/db/store';
+import { isServerless } from '@/lib/env';
 
 /**
  * Runs a real investigation and streams progress as it happens.
@@ -26,7 +27,19 @@ interface Body {
 }
 
 export async function POST(req: Request) {
-  const { statement, asset, mode = 'record' } = (await req.json()) as Body;
+  const { statement, asset, mode: requested = 'record' } = (await req.json()) as Body;
+
+  // Fixtures are a development affordance: they save credits while the same
+  // thesis is run repeatedly against the same endpoints. Neither fixture mode
+  // can work once deployed. Recording writes files, and a serverless
+  // filesystem is read-only, which is what surfaced to users as "ENOENT: no
+  // such file or directory, mkdir 'fixtures/nansen'" on every investigation.
+  // Replaying is no better, since `/fixtures/` is gitignored and never ships.
+  //
+  // Live is also simply the correct behaviour in production: a deployed
+  // investigation should read current data, and only live calls count toward
+  // the ledger this project is measured on.
+  const mode = isServerless() ? 'live' : requested;
 
   if (!statement?.trim() || !asset?.address || !asset?.chain) {
     return Response.json(

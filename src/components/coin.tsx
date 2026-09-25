@@ -57,12 +57,22 @@ export function CoinIcon({
   chain,
   address,
   className = '',
+  fluid = false,
 }: {
   symbol: string;
   size?: number;
   chain?: string;
   address?: string;
   className?: string;
+  /**
+   * Fill the parent instead of taking a fixed pixel size.
+   *
+   * The hero orbit sizes itself in container-query units so it scales with the
+   * viewport, but its marks were fixed pixels, which is why it could only be
+   * shown at one width. `size` still sets the monogram's text scale, since
+   * that has to be chosen from something.
+   */
+  fluid?: boolean;
 }) {
   const key = symbol.toLowerCase();
   const local = COIN_FILES.has(key);
@@ -100,12 +110,14 @@ export function CoinIcon({
         style={{
           position: 'relative',
           display: 'inline-block',
-          width: size,
-          height: size,
+          width: fluid ? '100%' : size,
+          height: fluid ? '100%' : size,
           flexShrink: 0,
         }}
       >
-        {local ? null : <Monogram label={label} hue={hue} size={size} />}
+        {local ? null : (
+          <Monogram label={label} hue={hue} size={size} fluid={fluid} />
+        )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -120,8 +132,8 @@ export function CoinIcon({
             // dark ring around artwork that already had a background: Bitcoin
             // rendered as an orange coin inside a black circle.
             inset: 0,
-            width: size,
-            height: size,
+            width: fluid ? '100%' : size,
+            height: fluid ? '100%' : size,
             // Never distort a mark that is not perfectly square.
             objectFit: 'contain',
             borderRadius: '50%',
@@ -141,7 +153,9 @@ export function CoinIcon({
     );
   }
 
-  return <Monogram label={label} hue={hue} size={size} className={className} />;
+  return (
+    <Monogram label={label} hue={hue} size={size} className={className} fluid={fluid} />
+  );
 }
 
 function Monogram({
@@ -149,16 +163,18 @@ function Monogram({
   hue,
   size,
   className = '',
+  fluid = false,
 }: {
   label: string;
   hue: number;
   size: number;
   className?: string;
+  fluid?: boolean;
 }) {
   return (
     <svg
-      width={size}
-      height={size}
+      width={fluid ? '100%' : size}
+      height={fluid ? '100%' : size}
       viewBox="0 0 32 32"
       className={className}
       role="img"

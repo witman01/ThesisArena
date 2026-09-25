@@ -99,8 +99,26 @@ export class NansenClient {
     this.maxTier = opts.maxTier ?? 'cheap';
     this.cacheTtlMs = opts.cacheTtlMs ?? 10 * 60_000;
 
-    if (this.fixtureDir && !existsSync(this.fixtureDir)) {
-      mkdirSync(this.fixtureDir, { recursive: true });
+    // A fixture directory is a cache, so failing to create one is not a reason
+    // to fail the work. On a read-only filesystem this threw and took the
+    // whole investigation with it; now fixtures switch themselves off and the
+    // run continues live, which is what the caller wanted anyway.
+    //
+    // Replay is the exception. It has no network fallback, so a caller asking
+    // for it and getting a live run instead would silently spend credits it
+    // was explicitly avoiding.
+    if (this.fixtureDir) {
+      try {
+        if (!existsSync(this.fixtureDir)) mkdirSync(this.fixtureDir, { recursive: true });
+      } catch (e) {
+        if (this.fixtureMode === 'replay') throw e;
+        console.warn(
+          `[nansen] fixture directory "${this.fixtureDir}" is not writable, ` +
+            `so fixtures are disabled and this run reads live: ${(e as Error).message}`,
+        );
+        this.fixtureDir = undefined;
+        this.fixtureMode = 'off';
+      }
     }
   }
 
@@ -244,10 +262,18 @@ export class NansenClient {
     }
 
     if (this.fixtureDir && this.fixtureMode === 'record') {
-      writeFileSync(
-        this.fixturePath(spec, body),
-        JSON.stringify({ endpoint: spec.path, request: body, body: json }, null, 2),
-      );
+      // The response is already in hand; a cache write that fails must not
+      // discard it.
+      try {
+        writeFileSync(
+          this.fixturePath(spec, body),
+          JSON.stringify({ endpoint: spec.path, request: body, body: json }, null, 2),
+        );
+      } catch (e) {
+        console.warn(`[nansen] could not record fixture: ${(e as Error).message}`);
+        this.fixtureDir = undefined;
+        this.fixtureMode = 'off';
+      }
     }
 
     this.cache.set(cacheKey, { at: Date.now(), body: json });

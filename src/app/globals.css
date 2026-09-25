@@ -192,6 +192,13 @@ body {
   }
 }
 .orbit {
+  /* The resting position, which is also the animation's first frame.
+     Placement lived only inside the keyframes, so switching the animation off
+     left every mark with no transform at all: all 21 collapsed onto the centre
+     point and disappeared behind the core mark. Anyone browsing with reduced
+     motion saw two empty rings. Now the animation adds rotation to a layout
+     that is already correct without it. */
+  transform: rotate(var(--a0)) translateX(var(--r)) rotate(calc(-1 * var(--a0)));
   animation: ta-orbit var(--dur, 30s) linear infinite;
 }
 .orbit-rev {
