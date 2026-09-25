@@ -283,8 +283,34 @@ const ORBIT = RINGS.flatMap((ring) =>
  * Decorative orbit. A fixed set of majors — the investigated token is
  * deliberately never placed here, so the art makes no claim about the data.
  */
+/**
+ * Which mark sits in the middle, changing on a slow cycle.
+ *
+ * It was pinned to BTC, so the one element at the centre of the composition
+ * never moved while everything around it did. Cycling gives the orbit
+ * somewhere to lead the eye, and reuses the marks already on screen so nothing
+ * new has to load.
+ *
+ * Held still for anyone who asked for reduced motion, which is the same
+ * reading of the preference the rotating headline takes.
+ */
+const FOCUS = ['BTC', 'ETH', 'SOL', 'LINK', 'GOOGL', 'UNI', 'AAVE', 'ARB'];
+const FOCUS_MS = 3400;
+
+function useOrbitFocus(): string {
+  const [n, setN] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const t = setInterval(() => setN((v) => (v + 1) % FOCUS.length), FOCUS_MS);
+    return () => clearInterval(t);
+  }, []);
+
+  return FOCUS[n];
+}
+
 function ArenaOrb() {
-  const active = 'BTC';
+  const active = useOrbitFocus();
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[440px]">
       <svg
@@ -355,10 +381,17 @@ function ArenaOrb() {
           className="float-slow line-in grid place-items-center"
           style={{
             filter: 'drop-shadow(0 0 26px rgba(0,224,138,0.55))',
-            // 84 of 440, held as a proportion so the centre mark scales with
-            // the ring rather than swamping it on a narrow screen.
-            width: '19.09cqw',
-            height: '19.09cqw',
+            // 84 of 440, as a percentage of this wrapper rather than in cqw.
+            //
+            // This div is a sibling of the one that declares the query
+            // container, not a child of it, so cqw here had no container to
+            // resolve against and fell back to the viewport. The mark grew
+            // with the window instead of with the orbit: 19% of the rings on a
+            // phone, 62% of them at 1440px, which is the "too big" everyone
+            // saw. The wrapper is inset-0 on a square parent, so a percentage
+            // is exactly the proportion intended and needs no container at all.
+            width: '19.09%',
+            height: '19.09%',
           }}
         >
           <CoinIcon symbol={active} size={84} fluid />
