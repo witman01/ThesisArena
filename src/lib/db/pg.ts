@@ -118,7 +118,26 @@ function isTransient(e: unknown): boolean {
   return TRANSIENT.test(text);
 }
 
-export async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+/**
+ * Five attempts, not three, with exponential backoff and jitter.
+ *
+ * The failure this has to survive is a pool of stale keep-alive sockets, not a
+ * single unlucky connect. Neon's driver speaks HTTP, so a long-lived server
+ * keeps sockets to the endpoint pooled; when they age out server-side the next
+ * few requests fail with "fetch failed" as undici hands out and then discards
+ * each dead socket in turn. Three retries 250ms apart burned through that
+ * burst and still surfaced a 500 to the page, which is how a sustained crawl
+ * produced errors that a restart made disappear.
+ *
+ * Each failed attempt evicts one socket, so the fix is enough attempts to
+ * outlast a small pool, spaced widely enough that the origin can accept a new
+ * connection. Worst case is roughly four seconds before giving up, which is
+ * bounded and only reachable when the database is genuinely unreachable.
+ *
+ * Jitter matters because several requests in flight hit the same dead pool at
+ * the same moment; without it they retry in lockstep and collide again.
+ */
+export async function withRetry<T>(fn: () => Promise<T>, attempts = 5): Promise<T> {
   let last: unknown;
   for (let i = 0; i < attempts; i++) {
     try {
@@ -126,8 +145,10 @@ export async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<
     } catch (e) {
       if (!isTransient(e)) throw e;
       last = e;
-      // Short backoff: these clear in well under a second in practice.
-      if (i < attempts - 1) await new Promise((r) => setTimeout(r, 250 * (i + 1)));
+      if (i < attempts - 1) {
+        const backoff = 200 * 2 ** i + Math.random() * 150;
+        await new Promise((r) => setTimeout(r, backoff));
+      }
     }
   }
   throw last;

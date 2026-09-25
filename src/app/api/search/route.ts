@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { NansenClient } from '@/lib/nansen/client';
 import { isResearchable } from '@/lib/nansen/endpoints';
-import { priceLabel, type AssetMeta } from '@/lib/assets';
+import { type AssetMeta } from '@/lib/assets';
 import { recordRequests } from '@/lib/db/store';
 
 /**
@@ -128,45 +128,19 @@ function flagAmbiguity(assets: AssetMeta[]): void {
     `Showing the ${top.chainLabel} contract, which carries the most volume.`;
 }
 
-/**
- * Cross-checks the top result's price against CoinGecko.
+/*
+ * There was a CoinGecko price and market-cap cross-check here. It resolved a
+ * CoinGecko id by slugifying the Nansen token name, which is a guess, and on a
+ * wrong guess it matched a different asset entirely and then overrode Nansen's
+ * figures with that asset's. $JUP showed Nansen's real $0.30 price beside a
+ * $364.3K market cap belonging to an unrelated token, under a warning telling
+ * the user the two disagreed.
  *
- * Bridged and wrapped variants can carry a venue-specific price that differs
- * sharply from the canonical asset. Rather than silently showing a number that
- * may be wrong, we mark it so the UI can say so.
+ * Every figure on the asset card now comes from Nansen, for the contract that
+ * was actually selected. One source for one contract cannot contradict itself.
+ * DeFiLlama remains the independent corroboration, in its own labelled panel,
+ * where it is compared rather than substituted.
  */
-async function flagPriceOutliers(assets: AssetMeta[]): Promise<void> {
-  const top = assets[0];
-  if (!top || top.priceUsd <= 0) return;
-
-  try {
-    const res = await fetch(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${encodeURIComponent(
-        top.name.toLowerCase().replace(/\s+/g, '-'),
-      )}&vs_currencies=usd&include_market_cap=true`,
-      { signal: AbortSignal.timeout(2500) },
-    );
-    if (!res.ok) return;
-
-    const body = (await res.json()) as Record<
-      string,
-      { usd?: number; usd_market_cap?: number }
-    >;
-    const entry = Object.values(body)[0];
-    const ref = entry?.usd;
-    if (entry?.usd_market_cap && entry.usd_market_cap > 0) {
-      top.canonicalMarketCap = entry.usd_market_cap;
-    }
-    if (!ref || ref <= 0) return;
-
-    const drift = Math.abs(top.priceUsd - ref) / ref;
-    if (drift > 0.08) {
-      top.priceWarning = `Nansen ${priceLabel(top.priceUsd)} vs CoinGecko ${priceLabel(ref)}`;
-    }
-  } catch {
-    // The cross-check is advisory; never fail search because it was slow.
-  }
-}
 
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams.get('q')?.trim() ?? '';
@@ -262,7 +236,6 @@ export async function GET(req: Request) {
     // even though search/general is billed at 0 credits.
     await recordRequests(client.ledger, { context: 'search' });
 
-    await flagPriceOutliers(assets);
     flagAmbiguity(assets);
     return NextResponse.json({ assets });
   } catch (e) {

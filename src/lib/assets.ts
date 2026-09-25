@@ -21,13 +21,9 @@ export interface AssetMeta {
    * SOL's ~$66B — so it must never be labelled "market cap".
    */
   marketCapUsd: number;
-  /** Whole-asset market cap from an independent source, when resolvable. */
-  canonicalMarketCap?: number;
   change24h: number;
   /** Native assets are rejected by tgm/flows — the modules branch on this. */
   isNative?: boolean;
-  /** Set when an independent source disagrees with Nansen's price. */
-  priceWarning?: string;
   /**
    * Set on the top result when the same ticker resolves to several contracts.
    *

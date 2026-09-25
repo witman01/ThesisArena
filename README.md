@@ -84,6 +84,10 @@ They answer four different questions, which is the point. If they were four view
 
 Every investigation ends with **why the verdict came out that way**: which module carried the weight, what argued against it, which conditions moved and by how much, and what the read could not see. Each line carries its figure and the endpoint that produced it.
 
+![Why this verdict](docs/screenshots/reasoning.png)
+
+Note the two "what moved" lines. Each names the condition, restates that it was **set before any evidence was weighed**, and gives the live reading against the threshold it broke. That ordering is the whole claim of the product, so it is written into the explanation rather than left for the reader to take on trust.
+
 ## The result card
 
 ![Shareable result card](docs/screenshots/share-card.png)

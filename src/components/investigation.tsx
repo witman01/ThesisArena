@@ -116,8 +116,8 @@ export function Preparing({
           <p className="tabular mt-0.5 font-mono text-[11.5px] text-ink-muted">
             {asset.priceUsd > 0 ? priceLabel(asset.priceUsd) : 'Unpriced'}
             {asset.marketCapUsd > 0 &&
-              ` \u00b7 ${compactUsd(asset.canonicalMarketCap ?? asset.marketCapUsd)} ${
-                asset.isNative && !asset.canonicalMarketCap ? 'wrapped supply' : 'mcap'
+              ` \u00b7 ${compactUsd(asset.marketCapUsd)} ${
+                asset.isNative ? 'wrapped supply' : 'mcap'
               }`}
           </p>
         </div>

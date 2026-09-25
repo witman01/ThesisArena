@@ -105,20 +105,7 @@ export function CoinIcon({
           flexShrink: 0,
         }}
       >
-        {local ? (
-          <span
-            style={{
-              position: 'absolute',
-              inset: 0,
-              borderRadius: '50%',
-              background: 'var(--surface-3)',
-              border: '1px solid var(--border-neutral)',
-            }}
-            aria-hidden="true"
-          />
-        ) : (
-          <Monogram label={label} hue={hue} size={size} />
-        )}
+        {local ? null : <Monogram label={label} hue={hue} size={size} />}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
@@ -127,17 +114,17 @@ export function CoinIcon({
           height={size}
           style={{
             position: 'absolute',
-            // The curated marks are bare artwork on a transparent canvas and
-            // run edge to edge, so a circular clip slices their corners off:
-            // Solana's three bars came out truncated and fused together. They
-            // get a padded disc to sit inside instead. Remote logos arrive
-            // with their own badge, so those still fill the circle.
-            inset: local ? Math.round(size * 0.16) : 0,
-            width: local ? size - Math.round(size * 0.32) : size,
-            height: local ? size - Math.round(size * 0.32) : size,
+            // Every curated mark in public/coins draws its own disc, edge to
+            // edge in a 32x32 box, so all of them fill the circle. An earlier
+            // version sat them on a backing disc and inset them, which put a
+            // dark ring around artwork that already had a background: Bitcoin
+            // rendered as an orange coin inside a black circle.
+            inset: 0,
+            width: size,
+            height: size,
             // Never distort a mark that is not perfectly square.
             objectFit: 'contain',
-            borderRadius: local ? 0 : '50%',
+            borderRadius: '50%',
             // Hidden rather than unmounted. A parent that re-keys this
             // component resets the failed flag, which put a broken image back
             // over the monogram; opacity does not depend on that state

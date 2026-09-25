@@ -402,13 +402,7 @@ function AssetCard({
                 Label it for what it is rather than overstating. */}
             <Field
               label={a.isNative ? 'Wrapped supply' : 'Market cap'}
-              value={
-                a.canonicalMarketCap
-                  ? compactUsd(a.canonicalMarketCap)
-                  : a.marketCapUsd > 0
-                    ? compactUsd(a.marketCapUsd)
-                    : 'n/a'
-              }
+              value={a.marketCapUsd > 0 ? compactUsd(a.marketCapUsd) : 'n/a'}
             />
             {a.change24h !== 0 && (
               <Field
@@ -418,16 +412,6 @@ function AssetCard({
               />
             )}
           </div>
-
-          {a.priceWarning && (
-            <p
-              className="mt-2 text-[11px]"
-              style={{ color: 'var(--cautious)' }}
-              title="Nansen's price for this contract differs from the canonical asset"
-            >
-              ⚠ Price differs from reference: {a.priceWarning}
-            </p>
-          )}
 
           {/* Which contract was chosen, when the ticker names more than one.
               A thesis about a token on one chain is not a thesis about a

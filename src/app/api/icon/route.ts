@@ -39,6 +39,9 @@ const DEXSCREENER: Record<string, string> = {
   tron: 'tron',
   blast: 'blast',
   zksync: 'zksync',
+  ton: 'ton',
+  injective: 'injective',
+  starknet: 'starknet',
 };
 
 /** CoinGecko's asset-platform ids, for its contract lookup. */
@@ -57,6 +60,18 @@ const COINGECKO_PLATFORM: Record<string, string> = {
   sei: 'sei-v2',
   blast: 'blast',
   zksync: 'zksync',
+  // The non-EVM chains Nansen researches. These have no DexScreener image
+  // endpoint, so CoinGecko's contract lookup is the only source that carries
+  // them, and without these entries every NEAR, TON and Sui token fell back
+  // to a monogram.
+  near: 'near-protocol',
+  ton: 'the-open-network',
+  sui: 'sui',
+  tron: 'tron',
+  injective: 'injective',
+  starknet: 'starknet',
+  sonic: 'sonic',
+  hyperevm: 'hyperevm',
 };
 
 /**
@@ -167,6 +182,18 @@ async function grab(url: string): Promise<Fetched | null> {
 }
 
 /** CoinGecko answers with metadata; the logo is a second hop. */
+/**
+ * Lowercases an EVM address and leaves every other kind alone.
+ *
+ * EVM hex is case-insensitive, and folding it keeps one cache entry per token
+ * whichever casing a caller passes. Nothing else is: a Sui type is
+ * `0x2::sui::SUI`, and TON addresses are base64url, so folding those produces
+ * an address the upstream has never heard of.
+ */
+function normaliseAddress(address: string): string {
+  return /^0x[0-9a-fA-F]{40}$/.test(address) ? address.toLowerCase() : address;
+}
+
 async function viaCoinGecko(chain: string, address: string): Promise<Fetched | null> {
   const platform = COINGECKO_PLATFORM[chain];
   if (!platform) return null;
@@ -175,7 +202,8 @@ async function viaCoinGecko(chain: string, address: string): Promise<Fetched | n
     // The default response carries every ticker and the full market history
     // — hundreds of KB that time out before the one field we want arrives.
     const res = await fetch(
-      `https://api.coingecko.com/api/v3/coins/${platform}/contract/${address.toLowerCase()}` +
+      `https://api.coingecko.com/api/v3/coins/${platform}/contract/` +
+        `${encodeURIComponent(normaliseAddress(address))}` +
         '?localization=false&tickers=false&market_data=false' +
         '&community_data=false&developer_data=false&sparkline=false',
       { signal: AbortSignal.timeout(8000), headers: { 'User-Agent': 'ThesisArena/1.0' } },
@@ -204,12 +232,23 @@ export async function GET(request: Request) {
   // each other.
   const raster = url.searchParams.get('raster') === '1';
 
-  if (!chain || !address || !/^[a-zA-Z0-9]{1,64}$/.test(address.replace(/^0x/, ''))) {
+  // Alphanumerics only rejected every non-EVM address we actually research:
+  // NEAR names contain dots ("btc.omft.near"), TON addresses are base64url so
+  // they carry "-" and "_", and a Sui type is "0x2::sui::SUI". Those all came
+  // back 400, which the browser treats as a failed image, so the token showed
+  // a monogram even where a real logo existed. Path separators stay out, and
+  // ".." is refused outright, because the address is interpolated into
+  // upstream URLs.
+  const addressOk =
+    /^[a-zA-Z0-9._:-]{1,128}$/.test(address) && !address.includes('..');
+  if (!chain || !addressOk) {
     return new NextResponse('bad request', { status: 400 });
   }
 
+  // Separators become "-" rather than vanishing, so two different addresses
+  // cannot collapse onto one cache entry and serve each other's logo.
   const key =
-    `${chain}-${address.toLowerCase()}`.replace(/[^a-z0-9-]/g, '') +
+    `${chain}-${address.toLowerCase()}`.replace(/[^a-z0-9-]/g, '-') +
     (raster ? '-raster' : '');
 
   const symbol = (url.searchParams.get('symbol') ?? '').trim();
@@ -230,7 +269,10 @@ export async function GET(request: Request) {
 
   if (ds) {
     direct.push(
-      grab(`https://dd.dexscreener.com/ds-data/tokens/${ds}/${address.toLowerCase()}.png`),
+      grab(
+        `https://dd.dexscreener.com/ds-data/tokens/${ds}/` +
+          `${encodeURIComponent(normaliseAddress(address))}.png`,
+      ),
     );
   }
   if (chain === 'ethereum') {
