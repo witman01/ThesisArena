@@ -183,6 +183,22 @@ npm run dev
 
 `/` arena · `/new` investigate · `/thesis/[id]` result and monitoring · `/report/[id]` full report · `/history` the permanent record · `/analytics` request ledger · `/settings` live configuration and compliance classes · `/whitepaper` the design document · `/whitepaper/full` one-page print view · `/api/og/[id]` share image
 
+## Deploying
+
+Local development needs nothing but a Nansen key. A hosted deployment needs one more thing, because a serverless filesystem is read-only and ephemeral, so the SQLite default cannot be used there.
+
+| Variable | Required | Notes |
+|---|---|---|
+| `NANSEN_API_KEY` | yes | Every on-chain read goes through it |
+| `DATABASE_URL` | yes, when hosted | The Neon **pooled** connection string; the host contains `-pooler` |
+| `NEXT_PUBLIC_SITE_URL` | only for a custom domain | Otherwise the Vercel domain is detected automatically |
+
+Set them for **every environment you deploy**, Production and Preview both. Vercel does not copy variables between environments, and a Preview build missing `DATABASE_URL` fails the same way Production would.
+
+If `DATABASE_URL` is missing, persistence falls through to SQLite and the platform refuses the write. The error names the missing variable rather than surfacing as `ENOENT: mkdir 'data'` from inside a bundled chunk, which is what it used to do and which says nothing useful to whoever is reading the log.
+
+Share links and the Open Graph card need an absolute origin. `NEXT_PUBLIC_SITE_URL` wins if set; otherwise the Vercel production domain is used, and a per-deployment URL on previews. Localhost is the last resort rather than the default, so a deployed instance cannot hand out links pointing at the reader's own machine.
+
 ## Whitepaper
 
 ![Whitepaper](docs/screenshots/whitepaper.png)

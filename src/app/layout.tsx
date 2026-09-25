@@ -2,12 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TopBar } from "@/components/shell";
+import { siteOrigin } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  // Result pages give their Open Graph image as the relative "/api/og/[id]".
+  // Without a base, Next cannot turn that into the absolute URL a card unfurl
+  // needs, so the preview resolved against localhost and never loaded.
+  metadataBase: new URL(siteOrigin()),
   title: "ThesisArena · put your thesis on trial",
   description:
     "State a crypto thesis and four deterministic research modules interrogate it against live Nansen data, then commit to exactly what would prove it wrong.",

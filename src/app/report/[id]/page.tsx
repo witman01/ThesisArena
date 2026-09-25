@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { loadInvestigation, statusLabel } from '@/lib/db/load';
+import { siteOrigin } from '@/lib/site';
 import type { Agent, Thesis, Tripwire } from '@/lib/types';
 import { CoinIcon } from '@/components/coin';
 import { TermStructureCard } from '@/components/term-structure';
@@ -272,7 +273,7 @@ function ReportHeader({ thesis: t, createdAt }: { thesis: Thesis; createdAt: str
 
         <div className="flex flex-wrap items-center gap-2">
           <ReportActions
-            shareUrl={`${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'}/report/${t.id}`}
+            shareUrl={`${siteOrigin()}/report/${t.id}`}
           />
           <Link
             href={`/thesis/${t.id}`}

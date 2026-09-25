@@ -15,8 +15,34 @@ const DB_PATH = process.env.THESISARENA_DB ?? 'data/thesisarena.db';
 
 let db: Database.Database | null = null;
 
+/**
+ * True on a platform whose filesystem SQLite cannot live on.
+ *
+ * Vercel and Netlify both set their own marker; `NODE_ENV` alone is not enough,
+ * because a production build run on a real server is perfectly able to use
+ * SQLite and should keep working.
+ */
+function isServerless(): boolean {
+  return Boolean(process.env.VERCEL || process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME);
+}
+
 export function getDb(): Database.Database {
   if (db) return db;
+
+  // Reaching SQLite on a serverless host means DATABASE_URL was never set, so
+  // the backend selector fell through to the local file. Saying that is worth
+  // a few lines: the unguarded failure was "ENOENT: no such file or directory,
+  // mkdir 'data'" from inside a bundled chunk, which names neither the missing
+  // variable nor the reason the directory cannot be created.
+  if (isServerless()) {
+    throw new Error(
+      'DATABASE_URL is not set, so persistence fell back to SQLite on local disk, ' +
+        'and this platform has no writable filesystem. Add your Neon pooled ' +
+        'connection string (the host contains "-pooler") as DATABASE_URL in the ' +
+        "project's environment variables, for every environment you deploy, then " +
+        'redeploy. See .env.example.',
+    );
+  }
 
   const dir = dirname(DB_PATH);
   if (dir && dir !== '.' && !existsSync(dir)) mkdirSync(dir, { recursive: true });

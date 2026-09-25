@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { loadInvestigation } from '@/lib/db/load';
+import { siteOrigin } from '@/lib/site';
 import { composeObservation, SENTIMENT, SENTIMENT_NOTE } from '@/lib/research/observe';
 import { ArenaBoard } from '@/components/arena-section';
 import { ConsensusCard } from '@/components/arena';
@@ -129,7 +130,7 @@ export default async function InvestigationPage({
             status={status}
             chain={row.chain}
             address={row.address}
-            url={`${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'}/thesis/${row.id}`}
+            url={`${siteOrigin()}/thesis/${row.id}`}
             investigationId={row.id}
             observation={observation}
           />
