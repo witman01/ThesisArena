@@ -19,8 +19,38 @@ import { join } from 'node:path';
  * needs no code change.
  */
 
+/**
+ * The connection string, under whichever name it was provided.
+ *
+ * DATABASE_URL is the documented name and always wins. The rest are here
+ * because the Neon and Vercel Postgres integrations provision their own
+ * variables, and a project connected through one of those has a perfectly good
+ * connection string sitting in the environment under a name this code was not
+ * looking for. Refusing to start in that situation is a configuration puzzle,
+ * not a safety measure.
+ *
+ * Pooled names come first. The non-pooled ones are a last resort and say so
+ * when used, because an unpooled endpoint works right up until enough
+ * invocations overlap and then exhausts the connection limit.
+ */
+const URL_VARS = [
+  'DATABASE_URL',
+  'POSTGRES_URL',
+  'POSTGRES_PRISMA_URL',
+  'DATABASE_URL_UNPOOLED',
+  'POSTGRES_URL_NON_POOLING',
+] as const;
+
+export function resolveDatabaseUrl(): { url: string; from: string } | null {
+  for (const name of URL_VARS) {
+    const value = process.env[name]?.trim();
+    if (value && /^postgres(ql)?:\/\//.test(value)) return { url: value, from: name };
+  }
+  return null;
+}
+
 export function isPostgres(): boolean {
-  return Boolean(process.env.DATABASE_URL);
+  return resolveDatabaseUrl() !== null;
 }
 
 let sql: NeonQueryFunction<false, false> | null = null;
@@ -28,27 +58,29 @@ let sql: NeonQueryFunction<false, false> | null = null;
 export function getSql(): NeonQueryFunction<false, false> {
   if (sql) return sql;
 
-  const url = process.env.DATABASE_URL;
-  if (!url) {
+  const found = resolveDatabaseUrl();
+  if (!found) {
+    const present = URL_VARS.filter((n) => process.env[n]);
     throw new Error(
-      'DATABASE_URL is not set. Add a Neon pooled connection string to .env.local, ' +
-        'or leave it unset to use local SQLite.',
+      present.length > 0
+        ? `${present.join(', ')} is set but is not a postgres:// or postgresql:// ` +
+          'connection string. Check the value was pasted whole.'
+        : 'DATABASE_URL is not set. Add a Neon pooled connection string to .env.local, ' +
+          'or leave it unset to use local SQLite.',
     );
   }
-  if (!/^postgres(ql)?:\/\//.test(url)) {
-    throw new Error('DATABASE_URL must be a postgres:// or postgresql:// connection string.');
-  }
+
   // A non-pooled host works, but exhausts connections once more than a handful
   // of serverless invocations overlap. Worth saying out loud rather than
   // letting it surface later as an intermittent failure under load.
-  if (!url.includes('-pooler.')) {
+  if (!found.url.includes('-pooler.')) {
     console.warn(
-      '[db] DATABASE_URL is not a pooled Neon endpoint. Use the connection ' +
+      `[db] ${found.from} is not a pooled Neon endpoint. Use the connection ` +
         'string whose host contains "-pooler" for serverless deployments.',
     );
   }
 
-  sql = neon(url);
+  sql = neon(found.url);
   return sql;
 }
 

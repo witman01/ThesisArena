@@ -36,11 +36,12 @@ export function getDb(): Database.Database {
   // variable nor the reason the directory cannot be created.
   if (isServerless()) {
     throw new Error(
-      'DATABASE_URL is not set, so persistence fell back to SQLite on local disk, ' +
-        'and this platform has no writable filesystem. Add your Neon pooled ' +
-        'connection string (the host contains "-pooler") as DATABASE_URL in the ' +
-        "project's environment variables, for every environment you deploy, then " +
-        'redeploy. See .env.example.',
+      'No Postgres connection string found, so persistence fell back to SQLite ' +
+        'on local disk, and this platform has no writable filesystem. Add your ' +
+        'Neon pooled connection string (the host contains "-pooler") as ' +
+        "DATABASE_URL in the project's environment variables, for every " +
+        'environment you deploy, then redeploy. GET /api/health reports what ' +
+        'this instance can actually see, without printing any value.',
     );
   }
 
