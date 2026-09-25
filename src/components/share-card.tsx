@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Thesis } from '@/lib/types';
 import type { InvestigationStatus } from '@/lib/db/store';
 import { SENTIMENT, verdictLabel } from '@/lib/research/observe';
@@ -45,8 +45,48 @@ export function ShareCard({
   const [sharing, setSharing] = useState(false);
   // Which route the share actually took, so the confirmation describes what
   // happened rather than always describing the fallback.
-  const [shared, setShared] = useState<null | 'attached' | 'manual'>(null);
+  const [shared, setShared] = useState<null | 'attached' | 'manual' | 'blocked'>(
+    null,
+  );
   const tone = TONE[status];
+
+  /**
+   * The card, fetched before anyone clicks.
+   *
+   * This is the whole reason sharing works. Both share routes have to start
+   * inside the user gesture that opened them: iOS rejects `navigator.share`
+   * with NotAllowedError once an `await` has consumed the activation, and every
+   * popup blocker rejects a `window.open` for the same reason. The previous
+   * version fetched the image first and then called them, so on a phone the
+   * share sheet refused and the fallback window was blocked, which is to say
+   * nothing happened at all.
+   *
+   * Holding the file in a ref rather than state keeps the click handler
+   * synchronous: by the time it runs there is nothing left to await.
+   */
+  const cardFile = useRef<File | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/og/${investigationId}`);
+        if (!res.ok || cancelled) return;
+        const blob = await res.blob();
+        if (cancelled) return;
+        cardFile.current = new File(
+          [blob],
+          `thesisarena-${thesis.asset.symbol}-${investigationId}.png`,
+          { type: 'image/png' },
+        );
+      } catch {
+        // Left null; the click handler fetches on demand instead.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [investigationId, thesis.asset.symbol]);
 
   const tripped = thesis.tripwires.filter((t) => t.status === 'tripped').length;
 
@@ -58,83 +98,109 @@ export function ShareCard({
   // same figures twice, and buried the one line that is actually the point.
   const caption = `My thesis on $${thesis.asset.symbol}:\n\n"${thesis.statement}"`;
 
-  const tweetHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+  // x.com is the registered universal link, so on a phone with the app
+  // installed this opens the X app's composer rather than a browser tab.
+  const tweetHref = `https://x.com/intent/post?text=${encodeURIComponent(
     caption,
   )}&url=${encodeURIComponent(url)}`;
+
+  /** Saves the card to the device. Synchronous when it is already in hand. */
+  function saveCard(file: File) {
+    const href = URL.createObjectURL(file);
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    // Revoked on the next frame: revoking immediately can cancel the download
+    // in Safari before it has read the blob.
+    setTimeout(() => URL.revokeObjectURL(href), 10_000);
+  }
+
+  /** Puts the image on the clipboard, so the composer step is one paste. */
+  async function copyCard(file: File) {
+    try {
+      const ClipboardItemCtor = (
+        window as unknown as { ClipboardItem?: typeof ClipboardItem }
+      ).ClipboardItem;
+      if (ClipboardItemCtor && navigator.clipboard?.write) {
+        await navigator.clipboard.write([
+          new ClipboardItemCtor({ 'image/png': file }),
+        ]);
+      } else {
+        await navigator.clipboard.writeText(`${caption}\n${url}`);
+      }
+    } catch {
+      // Clipboard permission varies by browser; the download still landed.
+    }
+  }
+
+  /**
+   * X's web intent carries text and a link but never an image, which needs the
+   * API and an OAuth token. So the composer is opened and the card is put both
+   * on disk and on the clipboard for the reader to drop in.
+   *
+   * The window is opened first and synchronously. Every popup blocker refuses a
+   * `window.open` that is not still inside the click that asked for it.
+   */
+  function openComposer(file: File | null) {
+    const win = window.open(tweetHref, '_blank', 'noopener,noreferrer');
+    setShared(win ? 'manual' : 'blocked');
+
+    if (file) {
+      saveCard(file);
+      void copyCard(file);
+      return;
+    }
+    // Not prefetched yet. The composer is already open, so this only has to
+    // catch up with the image.
+    void (async () => {
+      try {
+        const res = await fetch(`/api/og/${investigationId}`);
+        if (!res.ok) return;
+        const late = new File(
+          [await res.blob()],
+          `thesisarena-${thesis.asset.symbol}-${investigationId}.png`,
+          { type: 'image/png' },
+        );
+        cardFile.current = late;
+        saveCard(late);
+        void copyCard(late);
+      } catch {
+        // The composer is open with the caption; the card can still be saved
+        // from the Download button.
+      }
+    })();
+  }
 
   /**
    * Posts the card with the caption attached to it.
    *
-   * Two routes, because only one of them can carry an image. The Web Share API
-   * hands the browser the PNG and the text together, so X opens with the card
-   * already attached and nothing to paste; that is the path whenever
-   * `canShare` accepts the file, which covers mobile and current desktop
-   * Chrome and Edge.
-   *
-   * Everywhere else, X's web intent takes text and a URL but cannot attach
-   * media at all, which needs the API and an OAuth token. Rather than pretend,
-   * the fallback does the three things a person would otherwise do by hand:
-   * save the card, put it on the clipboard, and open the composer.
+   * Deliberately not an async function. The Web Share API is the only route
+   * that can hand X an image, and it is only granted inside the user gesture,
+   * so the call has to be the first thing that happens on click. With the file
+   * already prefetched it is, and on a phone this opens the share sheet
+   * straight into X with the card and the caption together.
    */
-  async function shareOnX() {
-    setSharing(true);
-    try {
-      // Fetched as a blob so the download is a real file rather than a
-      // navigation that could replace the page.
-      const res = await fetch(`/api/og/${investigationId}`);
-      if (!res.ok) throw new Error(`card ${res.status}`);
+  function shareOnX() {
+    const file = cardFile.current;
 
-      const blob = await res.blob();
-      const file = new File(
-        [blob],
-        `thesisarena-${thesis.asset.symbol}-${investigationId}.png`,
-        { type: 'image/png' },
-      );
-
-      if (navigator.canShare?.({ files: [file] })) {
-        // The image goes with the post. No download, no composer, no paste.
-        await navigator.share({ files: [file], text: caption });
-        setShared('attached');
-        return;
-      }
-
-      const href = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = href;
-      a.download = file.name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(href);
-
-      // The image itself on the clipboard where the browser allows it, which
-      // turns the composer step into a single paste.
-      try {
-        const ClipboardItemCtor = (
-          window as unknown as { ClipboardItem?: typeof ClipboardItem }
-        ).ClipboardItem;
-        if (ClipboardItemCtor && navigator.clipboard?.write) {
-          await navigator.clipboard.write([
-            new ClipboardItemCtor({ 'image/png': blob }),
-          ]);
-        } else {
-          await navigator.clipboard.writeText(`${caption}\n${url}`);
-        }
-      } catch {
-        // Clipboard permission varies by browser; the download still landed.
-      }
-
-      setShared('manual');
-      window.open(tweetHref, '_blank', 'noopener,noreferrer');
-    } catch (e) {
-      // A cancelled share sheet is the user changing their mind, not a fault.
-      if ((e as Error)?.name === 'AbortError') return;
-      // Anything else: still get them to the composer.
-      setShared('manual');
-      window.open(tweetHref, '_blank', 'noopener,noreferrer');
-    } finally {
-      setSharing(false);
+    if (file && navigator.canShare?.({ files: [file] })) {
+      setSharing(true);
+      navigator
+        .share({ files: [file], text: caption })
+        .then(() => setShared('attached'))
+        .catch((e: Error) => {
+          // Dismissing the sheet is a decision, not a failure.
+          if (e?.name === 'AbortError') return;
+          openComposer(file);
+        })
+        .finally(() => setSharing(false));
+      return;
     }
+
+    openComposer(file);
   }
 
   async function copy() {
@@ -291,18 +357,37 @@ export function ShareCard({
           className="mt-3 rounded-lg px-3.5 py-3 text-[12px] leading-relaxed"
           style={{ background: 'var(--accent-wash)', color: 'var(--text-secondary)' }}
         >
-          {shared === 'attached' ? (
+          {shared === 'attached' && (
             <>
               <strong className="text-ink">Card attached.</strong> It went to the
               share sheet together with the caption, so the image posts with the
               text and there is nothing to paste.
             </>
-          ) : (
+          )}
+          {shared === 'manual' && (
             <>
               <strong className="text-ink">Image saved and caption copied.</strong> The
-              X composer is open in a new tab with the text already in it. Drag the
-              downloaded image in, or paste it with{' '}
+              X composer is open with the text already in it. Drag the downloaded
+              image in, or paste it with{' '}
               <kbd className="font-mono">Ctrl/Cmd&nbsp;+&nbsp;V</kbd>.
+            </>
+          )}
+          {/* A blocked popup used to leave nothing on screen at all, so the
+              button simply looked broken. Here is the link it tried to open. */}
+          {shared === 'blocked' && (
+            <>
+              <strong className="text-ink">Your browser blocked the new tab.</strong>{' '}
+              The card is saved and copied.{' '}
+              <a
+                href={tweetHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+                style={{ color: 'var(--accent)' }}
+              >
+                Open the X composer
+              </a>
+              , then paste the image.
             </>
           )}
         </div>
