@@ -604,7 +604,7 @@ const conditions: WPPage = {
         </LI>
         <LI>
           <Strong>Major.</Strong> Meaningful pressure. Enough to move the thesis to
-          Under pressure, not enough to end it.
+          Deteriorating, not enough to end it.
         </LI>
         <LI>
           <Strong>Minor.</Strong> A supporting observation that has stopped
@@ -670,25 +670,25 @@ const monitoring: WPPage = {
         Order matters, and getting it wrong produces a genuinely misleading
         interface. A fatal trip outranks everything. But zero module support
         outranks a merely stressed condition. If no module supports the claim,
-        the thesis is Challenged, not Under pressure.
+        the thesis is At risk, not Deteriorating.
       </P>
       <Pre>{`if (fatalTripped) return 'INVALIDATED';
 
 // No module supports the claim: the modules themselves contradict it,
-// and that outranks "a condition is under pressure".
+// and that outranks "a condition is deteriorating".
 if (support === 0 && challenge > 0) return 'CHALLENGED';
 
 if (anyTripped || anyStressed) return 'UNDER_STRESS';`}</Pre>
       <P>
         Before this ordering existed, a thesis with zero support and four
-        challenges rendered as Under pressure, which reads as &ldquo;intact but losing force&rdquo;
+        challenges rendered as Deteriorating, which reads as &ldquo;intact but losing force&rdquo;
         when the correct reading was &ldquo;the evidence contradicts this.&rdquo;
       </P>
 
       <H2 id="observed">Observed in operation</H2>
       <P>
         The central promise is that a verdict changes on its own. It does. Two
-        monitored theses moved from Under pressure to Invalidated on live data after
+        monitored theses moved from Deteriorating to Invalidated on live data after
         their investigations had closed, and a third recovered from{' '}
         <Code>tripped</Code> back to <Code>stressed</Code>, confirming the state
         machine is not a one-way ratchet toward bad news.

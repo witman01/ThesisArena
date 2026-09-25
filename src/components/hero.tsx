@@ -17,6 +17,15 @@ export interface HeroItem {
   statement: string;
   symbol: string;
   chain: string;
+  /**
+   * Carried so the mark can be resolved.
+   *
+   * Without it the pill passed a bare ticker, which only resolves for the
+   * handful of symbols with a canonical contract built in. Every other token
+   * fell back to a monogram, which was invisible while the newest
+   * investigation happened to be a major and obvious the moment it was not.
+   */
+  address: string;
   score: number;
   status: string;
 }
@@ -136,7 +145,12 @@ export function Hero({
                 className="flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[12.5px] transition-colors hover:text-ink"
                 style={{ border: '1px solid var(--border-neutral)', color: 'var(--text-secondary)' }}
               >
-                <CoinIcon symbol={latest.symbol} size={16} />
+                <CoinIcon
+                  symbol={latest.symbol}
+                  size={16}
+                  chain={latest.chain}
+                  address={latest.address}
+                />
                 Latest: {latest.symbol}
                 <span className="tabular font-semibold" style={{ color: STATUS_TONE[latest.status] }}>
                   {latest.score}/100

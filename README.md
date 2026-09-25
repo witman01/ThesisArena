@@ -30,10 +30,10 @@ Two numbers, never merged: an **Evidence Score** for how strong and internally c
 
 | State | Meaning |
 |---|---|
-| `SUPPORTED` | Evidence supports the thesis and no decisive contradiction is present |
-| `MIXED` | Evidence is split across the research modules |
-| `UNDER PRESSURE` | One or more conditions show stress, but the thesis has not failed |
-| `CHALLENGED` | The available evidence is materially contradicting the thesis |
+| `CONFIRMED` | Evidence supports the thesis and no decisive contradiction is present |
+| `NEUTRAL` | Evidence is split across the research modules |
+| `DETERIORATING` | One or more conditions show stress, but the thesis has not failed |
+| `AT RISK` | The available evidence is materially contradicting the thesis |
 | `INVALIDATED` | A fatal condition has been met |
 
 Never bullish or bearish. A thesis can itself be bearish, so a directional verdict would read as a price forecast this system does not make. The only question answered is whether the claim is surviving its own conditions.
@@ -92,9 +92,11 @@ Note the two "what moved" lines. Each names the condition, restates that it was 
 
 ![Shareable result card](docs/screenshots/share-card.png)
 
-Every investigation renders a card at `/api/og/[id]`, generated server side from the stored verdict rather than from anything typed by hand. Share on X downloads the image and opens the composer with the caption already written, so the claim, the score, the coverage and the invalidation count travel together and cannot be quoted selectively.
+Every investigation renders a card at `/api/og/[id]`, generated server side from the stored verdict rather than from anything typed by hand. It carries the two numbers unmerged, the support and challenge split, how many of the six conditions have broken, and a one-line verdict in plain words. In small type at the bottom: **Scores the claim, not the token. Not a price call.** That line is there because a number on a dark card next to a ticker looks like a price signal, and this one is not.
 
-It carries the two numbers unmerged, the support and challenge split, how many of the six conditions have broken, and a one-line verdict in plain words. In small type at the bottom: **Scores the claim, not the token. Not a price call.** That line is there because a number on a dark card next to a ticker looks like a price signal, and this one is not.
+Share on X attaches that image to the post through the Web Share API, so the card goes with the text rather than being pasted in afterwards. Where the browser will not carry a file, the card is downloaded and copied to the clipboard and the composer opens, which is the same three steps done by hand.
+
+The caption is the thesis and nothing else: `My thesis on $LINK:` and the sentence. The score, the coverage and the breach count are already printed on the image being attached, so repeating them in the text only makes the reader parse the same figures twice.
 
 ## Nansen integration
 

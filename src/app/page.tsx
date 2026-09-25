@@ -39,6 +39,7 @@ export default async function Home() {
           statement: r.statement,
           symbol: r.symbol,
           chain: r.chain,
+          address: r.address,
           score: r.evidence_score,
           status: r.status,
         }))}

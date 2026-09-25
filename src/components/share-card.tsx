@@ -43,30 +43,38 @@ export function ShareCard({
 }) {
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
-  const [shared, setShared] = useState(false);
+  // Which route the share actually took, so the confirmation describes what
+  // happened rather than always describing the fallback.
+  const [shared, setShared] = useState<null | 'attached' | 'manual'>(null);
   const tone = TONE[status];
 
   const tripped = thesis.tripwires.filter((t) => t.status === 'tripped').length;
 
-  const caption =
-    `${verdictLabel(status)}: ${SENTIMENT[status].toLowerCase()}.\n\n` +
-    `"${thesis.statement}"\n\n` +
-    `Evidence score ${thesis.consensus.score}/100 · ${thesis.consensus.coverage}% data coverage\n` +
-    `${thesis.consensus.leanPositive} support · ${thesis.consensus.total - thesis.consensus.leanPositive} challenge · ` +
-    `${tripped}/${thesis.tripwires.length} stress conditions breached\n\n` +
-    `Put your thesis on trial. Powered by Nansen.`;
+  // The caption is the thesis, and nothing else.
+  //
+  // It used to restate the score, the coverage, the support split and the
+  // breached count, all of which are already printed on the image being
+  // attached. Repeating them made the post long, made the reader parse the
+  // same figures twice, and buried the one line that is actually the point.
+  const caption = `My thesis on $${thesis.asset.symbol}:\n\n"${thesis.statement}"`;
 
   const tweetHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     caption,
   )}&url=${encodeURIComponent(url)}`;
 
   /**
-   * Prepares everything a post needs, then opens the composer.
+   * Posts the card with the caption attached to it.
    *
-   * X's web intent takes text and a URL but cannot attach media — that needs
-   * the API and an OAuth token. So rather than pretend, this does the three
-   * things a person would otherwise do by hand: save the card, put the caption
-   * on the clipboard, and open the composer. The image is one paste away.
+   * Two routes, because only one of them can carry an image. The Web Share API
+   * hands the browser the PNG and the text together, so X opens with the card
+   * already attached and nothing to paste; that is the path whenever
+   * `canShare` accepts the file, which covers mobile and current desktop
+   * Chrome and Edge.
+   *
+   * Everywhere else, X's web intent takes text and a URL but cannot attach
+   * media at all, which needs the API and an OAuth token. Rather than pretend,
+   * the fallback does the three things a person would otherwise do by hand:
+   * save the card, put it on the clipboard, and open the composer.
    */
   async function shareOnX() {
     setSharing(true);
@@ -74,41 +82,58 @@ export function ShareCard({
       // Fetched as a blob so the download is a real file rather than a
       // navigation that could replace the page.
       const res = await fetch(`/api/og/${investigationId}`);
-      if (res.ok) {
-        const blob = await res.blob();
-        const href = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = href;
-        a.download = `thesisarena-${thesis.asset.symbol}-${investigationId}.png`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(href);
+      if (!res.ok) throw new Error(`card ${res.status}`);
 
-        // Also put the image itself on the clipboard where the browser allows
-        // it, which turns the composer step into a single paste.
-        try {
-          const ClipboardItemCtor = (
-            window as unknown as { ClipboardItem?: typeof ClipboardItem }
-          ).ClipboardItem;
-          if (ClipboardItemCtor && navigator.clipboard?.write) {
-            await navigator.clipboard.write([
-              new ClipboardItemCtor({ 'image/png': blob }),
-            ]);
-          } else {
-            await navigator.clipboard.writeText(`${caption}
-${url}`);
-          }
-        } catch {
-          // Clipboard permission varies by browser; the download still landed.
-        }
+      const blob = await res.blob();
+      const file = new File(
+        [blob],
+        `thesisarena-${thesis.asset.symbol}-${investigationId}.png`,
+        { type: 'image/png' },
+      );
+
+      if (navigator.canShare?.({ files: [file] })) {
+        // The image goes with the post. No download, no composer, no paste.
+        await navigator.share({ files: [file], text: caption });
+        setShared('attached');
+        return;
       }
-    } catch {
-      // A failed image fetch must not block the post itself.
+
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = href;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(href);
+
+      // The image itself on the clipboard where the browser allows it, which
+      // turns the composer step into a single paste.
+      try {
+        const ClipboardItemCtor = (
+          window as unknown as { ClipboardItem?: typeof ClipboardItem }
+        ).ClipboardItem;
+        if (ClipboardItemCtor && navigator.clipboard?.write) {
+          await navigator.clipboard.write([
+            new ClipboardItemCtor({ 'image/png': blob }),
+          ]);
+        } else {
+          await navigator.clipboard.writeText(`${caption}\n${url}`);
+        }
+      } catch {
+        // Clipboard permission varies by browser; the download still landed.
+      }
+
+      setShared('manual');
+      window.open(tweetHref, '_blank', 'noopener,noreferrer');
+    } catch (e) {
+      // A cancelled share sheet is the user changing their mind, not a fault.
+      if ((e as Error)?.name === 'AbortError') return;
+      // Anything else: still get them to the composer.
+      setShared('manual');
+      window.open(tweetHref, '_blank', 'noopener,noreferrer');
     } finally {
       setSharing(false);
-      setShared(true);
-      window.open(tweetHref, '_blank', 'noopener,noreferrer');
     }
   }
 
@@ -266,16 +291,26 @@ ${url}`);
           className="mt-3 rounded-lg px-3.5 py-3 text-[12px] leading-relaxed"
           style={{ background: 'var(--accent-wash)', color: 'var(--text-secondary)' }}
         >
-          <strong className="text-ink">Image saved and caption copied.</strong> The X
-          composer is open in a new tab with the text already in it. Drag the
-          downloaded image in, or paste it with{' '}
-          <kbd className="font-mono">Ctrl/Cmd&nbsp;+&nbsp;V</kbd>.
+          {shared === 'attached' ? (
+            <>
+              <strong className="text-ink">Card attached.</strong> It went to the
+              share sheet together with the caption, so the image posts with the
+              text and there is nothing to paste.
+            </>
+          ) : (
+            <>
+              <strong className="text-ink">Image saved and caption copied.</strong> The
+              X composer is open in a new tab with the text already in it. Drag the
+              downloaded image in, or paste it with{' '}
+              <kbd className="font-mono">Ctrl/Cmd&nbsp;+&nbsp;V</kbd>.
+            </>
+          )}
         </div>
       ) : (
         <p className="mt-3 text-[11.5px] leading-relaxed text-ink-muted">
-          X cannot attach an image through a share link, so this downloads the
-          card and copies the caption first, then opens the composer for you to
-          drop it in. Posting the link alone still unfurls this card.
+          Posts the card with the caption attached. Where the browser will not
+          carry a file, it downloads the card, copies it, and opens the composer
+          for you to drop it in. Posting the link alone still unfurls this card.
         </p>
       )}
     </div>

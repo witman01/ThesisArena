@@ -57,7 +57,7 @@ export function deriveStatus(
   if (fatalTripped) return 'INVALIDATED';
 
   // No module supports the claim: the modules themselves contradict it, and
-  // that outranks "a condition is under pressure". A previous version checked
+  // that outranks "a condition is deteriorating". A previous version checked
   // the conditions first, so a thesis every module rejected still reported as
   // merely strained.
   if (support === 0 && challenge > 0) return 'CHALLENGED';

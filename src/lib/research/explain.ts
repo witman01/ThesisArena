@@ -124,7 +124,7 @@ export function explainVerdict(
       headline:
         t.status === 'tripped'
           ? `A ${t.severity} condition was met`
-          : 'A condition is under pressure',
+          : 'A condition is deteriorating',
       // Formatted by the metric's own unit, so a dollar figure reads as
       // dollars rather than seven bare digits.
       figure: `${metricValue(t.currentValue, t.metric.unit)} vs ${metricValue(t.threshold, t.metric.unit)}`,

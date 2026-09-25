@@ -21,12 +21,16 @@ import type { InvestigationStatus } from '@/lib/db/store';
  * Earlier wording borrowed from a trading desk ("Faded", "Offside"). It was
  * evocative and it made every reader stop to decode it, which is the wrong
  * cost for the one word that carries the answer.
+ *
+ * These are labels only. The keys are the stored status codes and the values
+ * are what a reader sees, so the wording can be revised without a migration
+ * or a change to the CHECK constraint that guards the column.
  */
 export const SENTIMENT: Record<InvestigationStatus, string> = {
-  SUPPORTED: 'Supported',
-  CHALLENGED: 'Challenged',
-  MIXED: 'Mixed',
-  UNDER_STRESS: 'Under pressure',
+  SUPPORTED: 'Confirmed',
+  CHALLENGED: 'At risk',
+  MIXED: 'Neutral',
+  UNDER_STRESS: 'Deteriorating',
   INVALIDATED: 'Invalidated',
 };
 

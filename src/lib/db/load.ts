@@ -6,6 +6,7 @@ import type {
   Thesis,
   Tripwire,
 } from '@/lib/types';
+import { SENTIMENT } from '@/lib/research/observe';
 import {
   getAgents,
   getConditions,
@@ -35,16 +36,16 @@ export interface LoadedInvestigation {
   events: Awaited<ReturnType<typeof getEvents>>;
 }
 
-const STATUS_LABEL: Record<InvestigationStatus, string> = {
-  SUPPORTED: 'Supported',
-  CHALLENGED: 'Challenged',
-  MIXED: 'Mixed',
-  UNDER_STRESS: 'Under stress',
-  INVALIDATED: 'Invalidated',
-};
-
+/**
+ * One label per status, from one place.
+ *
+ * This used to hold its own copy of the map, which meant the report page and
+ * the consensus card could disagree with the verdict shown everywhere else the
+ * moment either was edited. They had already drifted: "Under stress" here
+ * against "Under pressure" in the UI.
+ */
 export function statusLabel(s: InvestigationStatus): string {
-  return STATUS_LABEL[s] ?? s;
+  return SENTIMENT[s] ?? s;
 }
 
 export async function loadInvestigation(invId: string): Promise<LoadedInvestigation | null> {

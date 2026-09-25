@@ -47,7 +47,7 @@ export default async function History() {
           <>
             <div className="grid gap-4 sm:grid-cols-3">
               <Stat label="Investigations" value={total} />
-              <Stat label="Under stress" value={stressed} tone="var(--cautious)" />
+              <Stat label="Deteriorating" value={stressed} tone="var(--cautious)" />
               <Stat label="Invalidated" value={invalidated} tone="var(--bearish)" />
             </div>
 

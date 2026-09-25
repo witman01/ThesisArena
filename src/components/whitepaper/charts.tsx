@@ -6,6 +6,9 @@
  * the label carries the number; nothing depends on reading a bar against a grid.
  */
 
+import type { InvestigationStatus } from '@/lib/db/store';
+import { SENTIMENT } from '@/lib/research/observe';
+
 const TONE: Record<string, string> = {
   cheap: 'var(--accent)',
   mid: 'var(--cautious)',
@@ -135,34 +138,36 @@ export function WeightBar({
  * State machine — how a thesis moves as evidence arrives
  * ---------------------------------------------------------------------- */
 
-const STATES = [
+/**
+ * Labels come from SENTIMENT rather than being written out again here.
+ *
+ * There were three copies of this map. The whitepaper's diagram is the one a
+ * reader checks the product against, so it is the worst possible place for a
+ * stale name to survive a rename.
+ */
+const STATES: { key: InvestigationStatus; tone: string; note: string }[] = [
   {
     key: 'SUPPORTED',
-    label: 'Supported',
     tone: 'var(--bullish)',
     note: 'Evidence supports the thesis and no decisive contradiction is present',
   },
   {
     key: 'MIXED',
-    label: 'Mixed',
     tone: 'var(--neutral)',
     note: 'Evidence is split across the research modules',
   },
   {
     key: 'UNDER_STRESS',
-    label: 'Under pressure',
     tone: '#c08a3e',
     note: 'One or more conditions show stress, but the thesis has not failed',
   },
   {
     key: 'CHALLENGED',
-    label: 'Challenged',
     tone: 'var(--cautious)',
     note: 'The evidence is materially contradicting the thesis',
   },
   {
     key: 'INVALIDATED',
-    label: 'Invalidated',
     tone: 'var(--bearish)',
     note: 'A fatal condition has been met',
   },
@@ -182,7 +187,7 @@ export function StateMachine() {
             className="w-[118px] shrink-0 text-[13.5px] font-semibold"
             style={{ color: s.tone }}
           >
-            {s.label}
+            {SENTIMENT[s.key]}
           </span>
           <span className="w-[112px] shrink-0 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
             {s.key}
