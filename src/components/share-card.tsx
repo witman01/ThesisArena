@@ -15,6 +15,35 @@ import { CoinIcon } from './coin';
  * a link preview. Every figure on it comes from the stored investigation.
  */
 
+/**
+ * The post text: the ticker, the claim, and the link to the full result.
+ *
+ * Built to fit rather than capping what someone may type. The thesis box has
+ * no length limit, so a long claim would push the post past X's 280 and it
+ * would arrive truncated at whatever point X chose, which could be mid-link.
+ * The claim is shortened instead, on a word boundary, and the link is never
+ * touched: it is the part that leads to the unabridged thesis.
+ *
+ * X measures any link as 23 characters whatever its real length, so that is
+ * what the budget counts.
+ */
+const TWEET_LIMIT = 280;
+const LINK_COST = 23;
+
+export function buildCaption(symbol: string, statement: string, url: string): string {
+  const head = `My thesis on $${symbol}:\n\n"`;
+  const tail = `"\n\n`;
+  const room = TWEET_LIMIT - head.length - tail.length - LINK_COST;
+
+  let claim = statement.trim();
+  if (claim.length > room) {
+    const cut = claim.slice(0, room - 1);
+    const lastSpace = cut.lastIndexOf(' ');
+    claim = `${(lastSpace > room * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+  }
+  return `${head}${claim}${tail}${url}`;
+}
+
 const TONE: Record<InvestigationStatus, string> = {
   SUPPORTED: '#00e08a',
   CHALLENGED: '#ff5f5f',
@@ -96,13 +125,20 @@ export function ShareCard({
   // breached count, all of which are already printed on the image being
   // attached. Repeating them made the post long, made the reader parse the
   // same figures twice, and buried the one line that is actually the point.
-  const caption = `My thesis on $${thesis.asset.symbol}:\n\n"${thesis.statement}"`;
+  // The link is part of the caption rather than a separate field.
+  //
+  // Only the web intent has a `url` parameter. The Web Share API has no
+  // reliable equivalent once files are attached: `url` is dropped by most
+  // targets in that case, so a post shared from a phone went out with the card
+  // and the claim but nothing to click. Carrying it in the text is the one
+  // form both routes keep, and X linkifies it either way.
+  const caption = buildCaption(thesis.asset.symbol, thesis.statement, url);
 
   // x.com is the registered universal link, so on a phone with the app
-  // installed this opens the X app's composer rather than a browser tab.
-  const tweetHref = `https://x.com/intent/post?text=${encodeURIComponent(
-    caption,
-  )}&url=${encodeURIComponent(url)}`;
+  // installed this opens the X app's composer rather than a browser tab. No
+  // `url` parameter, because the caption already ends with it and X would
+  // otherwise append it a second time.
+  const tweetHref = `https://x.com/intent/post?text=${encodeURIComponent(caption)}`;
 
   /** Saves the card to the device. Synchronous when it is already in hand. */
   function saveCard(file: File) {
@@ -129,7 +165,7 @@ export function ShareCard({
           new ClipboardItemCtor({ 'image/png': file }),
         ]);
       } else {
-        await navigator.clipboard.writeText(`${caption}\n${url}`);
+        await navigator.clipboard.writeText(caption);
       }
     } catch {
       // Clipboard permission varies by browser; the download still landed.
@@ -205,7 +241,7 @@ export function ShareCard({
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(`${caption}\n${url}`);
+      await navigator.clipboard.writeText(caption);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
